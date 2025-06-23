@@ -142,7 +142,7 @@ TextureImporter:
         width: 542
         height: 702
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -159,12 +159,12 @@ TextureImporter:
       name: cat_sitting_1
       rect:
         serializedVersion: 2
-        x: 1209
+        x: 1189
         y: 119
-        width: 522
+        width: 542
         height: 702
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -181,12 +181,12 @@ TextureImporter:
       name: cat_sitting_2
       rect:
         serializedVersion: 2
-        x: 2269
+        x: 2189
         y: 119
-        width: 462
+        width: 542
         height: 702
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -203,12 +203,12 @@ TextureImporter:
       name: cat_sitting_3
       rect:
         serializedVersion: 2
-        x: 3229
+        x: 3188
         y: 119
-        width: 502
+        width: 542
         height: 702
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -225,12 +225,12 @@ TextureImporter:
       name: cat_sitting_4
       rect:
         serializedVersion: 2
-        x: 4229
+        x: 4189
         y: 119
-        width: 502
+        width: 542
         height: 702
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -247,12 +247,12 @@ TextureImporter:
       name: cat_sitting_5
       rect:
         serializedVersion: 2
-        x: 5229
+        x: 5189
         y: 119
-        width: 502
+        width: 542
         height: 702
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -269,12 +269,12 @@ TextureImporter:
       name: cat_sitting_6
       rect:
         serializedVersion: 2
-        x: 6269
+        x: 6189
         y: 119
-        width: 462
+        width: 542
         height: 702
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -291,12 +291,12 @@ TextureImporter:
       name: cat_sitting_7
       rect:
         serializedVersion: 2
-        x: 7209
+        x: 7189
         y: 119
-        width: 522
+        width: 542
         height: 702
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -313,7 +313,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: d42d52ba85813cfef85bd30e4aead101
     internalID: 0
     vertices: []
     indices: 
