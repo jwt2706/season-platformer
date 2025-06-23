@@ -102,13 +102,23 @@ public class GameManager : MonoBehaviour
         {
             if (spawned >= maxCharms) break;
 
-            Vector3 worldPos = baseTilemap.CellToWorld(tilePos + Vector3Int.up);
+            Vector3Int spawnTilePos = tilePos + Vector3Int.up;
+
+            // Check if the spawn tile above ground tile is empty (no tile)
+            if (baseTilemap.HasTile(spawnTilePos))
+            {
+                // There's a block above, skip this position
+                continue;
+            }
+
+            Vector3 worldPos = baseTilemap.CellToWorld(spawnTilePos);
             worldPos += new Vector3(0.5f, 0.5f, 0); // center charm on tile
 
             Instantiate(seasonPrefab, worldPos, Quaternion.identity);
             spawned++;
         }
     }
+
 
     GameObject GetPrefabForSeason(Season season)
     {
