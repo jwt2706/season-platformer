@@ -6,9 +6,8 @@ public class CharmHandler : MonoBehaviour
     {
         if (other.CompareTag("charm"))
         {
-            Debug.Log("Collected a charm!");
-            Destroy(other.gameObject); // Make the charm disappear
-            // You can add score logic or sound here too
+            GameManager.Instance.AddCharm();
+            Destroy(other.gameObject);
         }
     }
 }
