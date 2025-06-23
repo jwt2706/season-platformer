@@ -10,13 +10,23 @@ public enum Season
     Winter
 }
 
+[System.Serializable]
+public class SeasonalCharm
+{
+    public Season season;
+    public GameObject charmPrefab;
+}
+
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
     [Header("Charm Settings")]
-    public GameObject charmPrefab;
     public Tilemap baseTilemap;
+
+    [Tooltip("Assign charm prefabs for each season")]
+    public SeasonalCharm[] seasonalCharms = new SeasonalCharm[4]; // Assign in inspector with proper season names!
+
     public int maxCharms = 3;
     public int charmsCollected = 0;
 
@@ -25,7 +35,6 @@ public class GameManager : MonoBehaviour
 
     void Awake()
     {
-        // Singleton pattern
         if (Instance == null)
         {
             Instance = this;
@@ -45,7 +54,7 @@ public class GameManager : MonoBehaviour
     public void AddCharm()
     {
         charmsCollected++;
-        Debug.Log("Charms Collected: " + charmsCollected + "/" + maxCharms);
+        Debug.Log($"Charms Collected: {charmsCollected}/{maxCharms}");
 
         if (charmsCollected >= maxCharms)
         {
@@ -58,18 +67,19 @@ public class GameManager : MonoBehaviour
     public void NextSeason()
     {
         currentSeason = (Season)(((int)currentSeason + 1) % 4);
-        Debug.Log("Season changed to: " + currentSeason);
-        // You can trigger season-based visuals or logic here
-    }
-
-    public void SetSeason(Season newSeason)
-    {
-        currentSeason = newSeason;
-        Debug.Log("Season manually set to: " + currentSeason);
+        Debug.Log($"Season changed to: {currentSeason}");
+        // Optional: update visuals or music here
     }
 
     private void SpawnCharms()
     {
+        GameObject seasonPrefab = GetPrefabForSeason(currentSeason);
+        if (seasonPrefab == null)
+        {
+            Debug.LogError($"No prefab assigned for season: {currentSeason}");
+            return;
+        }
+
         List<Vector3Int> groundTiles = new List<Vector3Int>();
 
         BoundsInt bounds = baseTilemap.cellBounds;
@@ -93,11 +103,21 @@ public class GameManager : MonoBehaviour
             if (spawned >= maxCharms) break;
 
             Vector3 worldPos = baseTilemap.CellToWorld(tilePos + Vector3Int.up);
-            worldPos += new Vector3(0.5f, 0.5f, 0); // center charm
+            worldPos += new Vector3(0.5f, 0.5f, 0); // center charm on tile
 
-            Instantiate(charmPrefab, worldPos, Quaternion.identity);
+            Instantiate(seasonPrefab, worldPos, Quaternion.identity);
             spawned++;
         }
+    }
+
+    GameObject GetPrefabForSeason(Season season)
+    {
+        foreach (var seasonalCharm in seasonalCharms)
+        {
+            if (seasonalCharm.season == season)
+                return seasonalCharm.charmPrefab;
+        }
+        return null;
     }
 
     private void Shuffle<T>(List<T> list)
