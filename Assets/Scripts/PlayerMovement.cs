@@ -9,9 +9,10 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody2D rb;
     private bool isGrounded;
     private bool jumpPressed;
-    private int moveDirection = 0; // -1 for left, 1 for right, 0 for none
+    private int moveDirection = 0;
 
     private PlayerControls controls;
+    private bool isPaused = false;
 
     private void Awake()
     {
@@ -26,6 +27,9 @@ public class PlayerMovement : MonoBehaviour
 
         // Jump
         controls.Player.Jump.performed += ctx => jumpPressed = true;
+
+        // Pause
+        controls.Player.Pause.performed += ctx => TogglePause();
     }
 
     void OnEnable() => controls.Player.Enable();
@@ -38,6 +42,8 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        if (isPaused) return;
+
         rb.linearVelocity = new Vector2(moveDirection * moveSpeed, rb.linearVelocity.y);
 
         if (jumpPressed && isGrounded)
@@ -45,6 +51,14 @@ public class PlayerMovement : MonoBehaviour
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
             jumpPressed = false;
         }
+    }
+
+    void TogglePause()
+    {
+        isPaused = !isPaused;
+        Time.timeScale = isPaused ? 0f : 1f;
+        Debug.Log("Game " + (isPaused ? "Paused" : "Unpaused"));
+        // Optionally show/hide pause menu UI here
     }
 
     void OnCollisionEnter2D(Collision2D collision)
