@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 
 public class PlayerMovement : MonoBehaviour
@@ -18,6 +19,8 @@ public class PlayerMovement : MonoBehaviour
     private PlayerControls controls;
     private bool isPaused = false;
 
+    private Animator animator;
+
     private void Awake()
     {
         controls = new PlayerControls();
@@ -31,6 +34,19 @@ public class PlayerMovement : MonoBehaviour
         controls.Player.Jump.performed += ctx => jumpPressed = true;
 
         controls.Player.Pause.performed += ctx => TogglePause();
+
+        // only allow reset when game is paused
+        controls.Player.Reset.performed += ctx =>
+        {
+            if (isPaused)
+                ResetGame();
+        };
+    }
+
+    void ResetGame()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     void OnEnable() => controls.Player.Enable();
@@ -38,6 +54,7 @@ public class PlayerMovement : MonoBehaviour
 
     void Start()
     {
+        animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
         if (pauseTextUI != null)
             pauseTextUI.SetActive(false);
@@ -47,14 +64,18 @@ public class PlayerMovement : MonoBehaviour
     {
         if (isPaused) return;
 
-        rb.linearVelocity = new Vector2(moveDirection * moveSpeed, rb.linearVelocity.y);
+        float horizontalSpeed = moveDirection * moveSpeed;
+        rb.linearVelocity = new Vector2(horizontalSpeed, rb.linearVelocity.y);
 
         if (jumpPressed && isGrounded)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
             jumpPressed = false;
         }
+
+        animator.SetFloat("Speed", Mathf.Abs(horizontalSpeed));
     }
+
 
     void TogglePause()
     {
