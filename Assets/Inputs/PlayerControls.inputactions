@@ -47,6 +47,17 @@
                 },
                 {
                     "name": "",
+                    "id": "04d9e284-b165-43b4-b695-d3634f4e5aa9",
+                    "path": "<Gamepad>/leftStick/right",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MoveRight",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "e0678526-2161-431b-9a3b-ab92ce100ad6",
                     "path": "<Keyboard>/w",
                     "interactions": "",
@@ -69,8 +80,30 @@
                 },
                 {
                     "name": "",
+                    "id": "e61ece74-37dc-4010-bea9-56c329a339d6",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "9aa96a7c-ab5d-4294-9804-62dbbacfc1a6",
                     "path": "<Keyboard>/a",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MoveLeft",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "89dc5fdb-868b-4228-bdf9-04e863d259f2",
+                    "path": "<Gamepad>/leftStick/left",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
