@@ -1,10 +1,14 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
+
 
 public class PlayerMovement : MonoBehaviour
 {
     public float moveSpeed = 5f;
     public float jumpForce = 10f;
+
+    public GameObject pauseTextUI;
 
     private Rigidbody2D rb;
     private bool isGrounded;
@@ -18,17 +22,14 @@ public class PlayerMovement : MonoBehaviour
     {
         controls = new PlayerControls();
 
-        // Movement
         controls.Player.MoveLeft.performed += ctx => moveDirection = -1;
         controls.Player.MoveLeft.canceled += ctx => { if (moveDirection == -1) moveDirection = 0; };
 
         controls.Player.MoveRight.performed += ctx => moveDirection = 1;
         controls.Player.MoveRight.canceled += ctx => { if (moveDirection == 1) moveDirection = 0; };
 
-        // Jump
         controls.Player.Jump.performed += ctx => jumpPressed = true;
 
-        // Pause
         controls.Player.Pause.performed += ctx => TogglePause();
     }
 
@@ -38,6 +39,8 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        if (pauseTextUI != null)
+            pauseTextUI.SetActive(false);
     }
 
     void Update()
@@ -57,8 +60,11 @@ public class PlayerMovement : MonoBehaviour
     {
         isPaused = !isPaused;
         Time.timeScale = isPaused ? 0f : 1f;
+
+        if (pauseTextUI != null)
+            pauseTextUI.SetActive(isPaused);
+
         Debug.Log("Game " + (isPaused ? "Paused" : "Unpaused"));
-        // Optionally show/hide pause menu UI here
     }
 
     void OnCollisionEnter2D(Collision2D collision)
