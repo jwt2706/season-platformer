@@ -298,6 +298,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 7
   jumpForce: 8
+  wrapXMin: -16
+  wrapXMax: 16
   pauseTextUI: {fileID: 454294858}
 --- !u!95 &33674729
 Animator:

@@ -9,6 +9,10 @@ public class PlayerMovement : MonoBehaviour
     public float moveSpeed = 5f;
     public float jumpForce = 10f;
 
+    [Header("Wrap Settings")]
+    public float wrapXMin = -16f; // left edge of screen
+    public float wrapXMax = 16f;  // right edge of screen
+
     public GameObject pauseTextUI;
 
     private Rigidbody2D rb;
@@ -94,6 +98,17 @@ public class PlayerMovement : MonoBehaviour
         // Flip sprite only if actually moving
         if (Mathf.Abs(moveDirection) > 0)
             spriteRenderer.flipX = moveDirection < 0;
+
+        // Wraparound logic
+        Vector3 pos = transform.position;
+
+        if (pos.x < wrapXMin)
+            pos.x = wrapXMax;
+        else if (pos.x > wrapXMax)
+            pos.x = wrapXMin;
+
+        transform.position = pos;
+
     }
 
     bool IsTouchingWall()
