@@ -39,6 +39,14 @@ public class GameManager : MonoBehaviour
     public Tilemap autumnTilemap;
     public Tilemap winterTilemap;
 
+    [Header("Score and Timer")]
+    public int totalScore = 0;
+    public float startTime = 60f;          // total game time at start
+    public float charmTimeBonus = 10f;     // how much time each charm adds
+
+    private float timeRemaining;
+    private bool gameOver = false;
+
     void Awake()
     {
         if (Instance == null)
@@ -54,14 +62,34 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        timeRemaining = startTime;
         UpdateSeasonalTilemap();
         SpawnCharms();
+    }
+
+    void Update()
+    {
+        if (gameOver) return;
+
+        timeRemaining -= Time.deltaTime;
+
+        if (timeRemaining <= 0)
+        {
+            timeRemaining = 0;
+            gameOver = true;
+            Debug.Log("Time's up! Game over.");
+            // TODO: Trigger end screen, restart, etc.
+        }
     }
 
     public void AddCharm()
     {
         charmsCollected++;
-        Debug.Log($"Charms Collected: {charmsCollected}/{maxCharms}");
+        totalScore++;
+
+        timeRemaining += charmTimeBonus;
+
+        Debug.Log($"Charms Collected: {charmsCollected}/{maxCharms} | Score: {totalScore} | Time Left: {Mathf.FloorToInt(timeRemaining)}s");
 
         if (charmsCollected >= maxCharms)
         {
@@ -80,27 +108,17 @@ public class GameManager : MonoBehaviour
 
     private void UpdateSeasonalTilemap()
     {
-        // Disable all first
         springTilemap.gameObject.SetActive(false);
         summerTilemap.gameObject.SetActive(false);
         autumnTilemap.gameObject.SetActive(false);
         winterTilemap.gameObject.SetActive(false);
 
-        // Enable only the current season
         switch (currentSeason)
         {
-            case Season.Spring:
-                springTilemap.gameObject.SetActive(true);
-                break;
-            case Season.Summer:
-                summerTilemap.gameObject.SetActive(true);
-                break;
-            case Season.Autumn:
-                autumnTilemap.gameObject.SetActive(true);
-                break;
-            case Season.Winter:
-                winterTilemap.gameObject.SetActive(true);
-                break;
+            case Season.Spring: springTilemap.gameObject.SetActive(true); break;
+            case Season.Summer: summerTilemap.gameObject.SetActive(true); break;
+            case Season.Autumn: autumnTilemap.gameObject.SetActive(true); break;
+            case Season.Winter: winterTilemap.gameObject.SetActive(true); break;
         }
     }
 
@@ -114,8 +132,8 @@ public class GameManager : MonoBehaviour
         }
 
         List<Vector3Int> groundTiles = new List<Vector3Int>();
-
         BoundsInt bounds = baseTilemap.cellBounds;
+
         for (int x = bounds.xMin; x < bounds.xMax; x++)
         {
             for (int y = bounds.yMin; y < bounds.yMax; y++)
@@ -166,4 +184,8 @@ public class GameManager : MonoBehaviour
             list[rand] = temp;
         }
     }
+
+    // Optional: expose time remaining and score to UI
+    public float GetTimeRemaining() => timeRemaining;
+    public int GetScore() => totalScore;
 }
