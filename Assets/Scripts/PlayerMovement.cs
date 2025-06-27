@@ -20,6 +20,8 @@ public class PlayerMovement : MonoBehaviour
     private bool isPaused = false;
 
     private Animator animator;
+    private SpriteRenderer spriteRenderer;
+
 
     private void Awake()
     {
@@ -55,17 +57,20 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         animator = GetComponent<Animator>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
         if (pauseTextUI != null)
             pauseTextUI.SetActive(false);
+        rb.freezeRotation = true;
     }
 
     void Update()
     {
         if (isPaused) return;
 
-        float horizontalSpeed = moveDirection * moveSpeed;
-        rb.linearVelocity = new Vector2(horizontalSpeed, rb.linearVelocity.y);
+        float horizontalVelocity = moveDirection * moveSpeed;
+
+        rb.linearVelocity = new Vector2(horizontalVelocity, rb.linearVelocity.y);
 
         if (jumpPressed && isGrounded)
         {
@@ -73,8 +78,15 @@ public class PlayerMovement : MonoBehaviour
             jumpPressed = false;
         }
 
-        animator.SetFloat("Speed", Mathf.Abs(horizontalSpeed));
+        // Use current velocity, not input
+        float actualSpeed = Mathf.Abs(rb.linearVelocity.x);
+        animator.SetFloat("Speed", actualSpeed);
+
+        // Flip sprite only if actually moving
+        if (Mathf.Abs(moveDirection) > 0)
+            spriteRenderer.flipX = moveDirection < 0;
     }
+
 
 
     void TogglePause()
