@@ -70,7 +70,16 @@ public class PlayerMovement : MonoBehaviour
 
         float horizontalVelocity = moveDirection * moveSpeed;
 
-        rb.linearVelocity = new Vector2(horizontalVelocity, rb.linearVelocity.y);
+        Vector2 currentVelocity = rb.linearVelocity;
+
+        // Check for wall using a Raycast (optional improvement later)
+        if (!IsTouchingWall())
+            currentVelocity.x = moveDirection * moveSpeed;
+        else
+            currentVelocity.x = 0; // stop pushing into the wall
+
+        rb.linearVelocity = currentVelocity;
+
 
         if (jumpPressed && isGrounded)
         {
@@ -87,6 +96,11 @@ public class PlayerMovement : MonoBehaviour
             spriteRenderer.flipX = moveDirection < 0;
     }
 
+    bool IsTouchingWall()
+    {
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.right * moveDirection, 0.6f, LayerMask.GetMask("Ground"));
+        return hit.collider != null;
+    }
 
 
     void TogglePause()
