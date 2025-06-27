@@ -25,13 +25,19 @@ public class GameManager : MonoBehaviour
     public Tilemap baseTilemap;
 
     [Tooltip("Assign charm prefabs for each season")]
-    public SeasonalCharm[] seasonalCharms = new SeasonalCharm[4]; // Assign in inspector with proper season names!
+    public SeasonalCharm[] seasonalCharms = new SeasonalCharm[4];
 
     public int maxCharms = 3;
     public int charmsCollected = 0;
 
     [Header("Season Settings")]
     public Season currentSeason = Season.Spring;
+
+    [Header("Seasonal Tilemaps")]
+    public Tilemap springTilemap;
+    public Tilemap summerTilemap;
+    public Tilemap autumnTilemap;
+    public Tilemap winterTilemap;
 
     void Awake()
     {
@@ -48,6 +54,7 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        UpdateSeasonalTilemap();
         SpawnCharms();
     }
 
@@ -68,7 +75,33 @@ public class GameManager : MonoBehaviour
     {
         currentSeason = (Season)(((int)currentSeason + 1) % 4);
         Debug.Log($"Season changed to: {currentSeason}");
-        // Optional: update visuals or music here
+        UpdateSeasonalTilemap();
+    }
+
+    private void UpdateSeasonalTilemap()
+    {
+        // Disable all first
+        springTilemap.gameObject.SetActive(false);
+        summerTilemap.gameObject.SetActive(false);
+        autumnTilemap.gameObject.SetActive(false);
+        winterTilemap.gameObject.SetActive(false);
+
+        // Enable only the current season
+        switch (currentSeason)
+        {
+            case Season.Spring:
+                springTilemap.gameObject.SetActive(true);
+                break;
+            case Season.Summer:
+                summerTilemap.gameObject.SetActive(true);
+                break;
+            case Season.Autumn:
+                autumnTilemap.gameObject.SetActive(true);
+                break;
+            case Season.Winter:
+                winterTilemap.gameObject.SetActive(true);
+                break;
+        }
     }
 
     private void SpawnCharms()
@@ -104,21 +137,14 @@ public class GameManager : MonoBehaviour
 
             Vector3Int spawnTilePos = tilePos + Vector3Int.up;
 
-            // Check if the spawn tile above ground tile is empty (no tile)
             if (baseTilemap.HasTile(spawnTilePos))
-            {
-                // There's a block above, skip this position
                 continue;
-            }
 
-            Vector3 worldPos = baseTilemap.CellToWorld(spawnTilePos);
-            worldPos += new Vector3(0.5f, 0.5f, 0); // center charm on tile
-
+            Vector3 worldPos = baseTilemap.CellToWorld(spawnTilePos) + new Vector3(0.5f, 0.5f, 0);
             Instantiate(seasonPrefab, worldPos, Quaternion.identity);
             spawned++;
         }
     }
-
 
     GameObject GetPrefabForSeason(Season season)
     {
