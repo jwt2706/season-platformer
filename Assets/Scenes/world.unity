@@ -2859,6 +2859,13 @@ MonoBehaviour:
   summerTilemap: {fileID: 136480056}
   autumnTilemap: {fileID: 991605363}
   winterTilemap: {fileID: 608926917}
+  totalScore: 0
+  startTime: 60
+  charmTimeBonus: 10
+  springMusic: {fileID: 8300000, guid: 4106c8d3e39704890b224dee298be2d4, type: 3}
+  summerMusic: {fileID: 8300000, guid: 3edfcf31b2ffee884a98467c2f356bff, type: 3}
+  autumnMusic: {fileID: 8300000, guid: 8ff0629cce716d51caac7b8c6aeec24c, type: 3}
+  winterMusic: {fileID: 8300000, guid: 20ab15b04eb09b4feb5937711ad771a5, type: 3}
 --- !u!4 &1283057254
 Transform:
   m_ObjectHideFlags: 0

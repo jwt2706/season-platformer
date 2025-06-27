@@ -47,6 +47,15 @@ public class GameManager : MonoBehaviour
     private float timeRemaining;
     private bool gameOver = false;
 
+    [Header("Music Settings")]
+    public AudioClip springMusic;
+    public AudioClip summerMusic;
+    public AudioClip autumnMusic;
+    public AudioClip winterMusic;
+
+    private AudioSource musicSource;
+
+
     void Awake()
     {
         if (Instance == null)
@@ -62,10 +71,16 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        musicSource = gameObject.AddComponent<AudioSource>();
+        musicSource.loop = true;
+        musicSource.playOnAwake = false;
+
         timeRemaining = startTime;
         UpdateSeasonalTilemap();
+        PlaySeasonMusic();
         SpawnCharms();
     }
+
 
     void Update()
     {
@@ -104,7 +119,9 @@ public class GameManager : MonoBehaviour
         currentSeason = (Season)(((int)currentSeason + 1) % 4);
         Debug.Log($"Season changed to: {currentSeason}");
         UpdateSeasonalTilemap();
+        PlaySeasonMusic();
     }
+
 
     private void UpdateSeasonalTilemap()
     {
@@ -188,4 +205,32 @@ public class GameManager : MonoBehaviour
     // Optional: expose time remaining and score to UI
     public float GetTimeRemaining() => timeRemaining;
     public int GetScore() => totalScore;
+
+    private void PlaySeasonMusic()
+    {
+        AudioClip clipToPlay = null;
+
+        switch (currentSeason)
+        {
+            case Season.Spring:
+                clipToPlay = springMusic;
+                break;
+            case Season.Summer:
+                clipToPlay = summerMusic;
+                break;
+            case Season.Autumn:
+                clipToPlay = autumnMusic;
+                break;
+            case Season.Winter:
+                clipToPlay = winterMusic;
+                break;
+        }
+
+        if (clipToPlay != null && musicSource.clip != clipToPlay)
+        {
+            musicSource.clip = clipToPlay;
+            musicSource.Play();
+        }
+    }
+
 }
