@@ -71,9 +71,7 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         if (isPaused) return;
-
         float horizontalVelocity = moveDirection * moveSpeed;
-
         Vector2 currentVelocity = rb.linearVelocity;
 
         // Check for wall using a Raycast (optional improvement later)
@@ -84,7 +82,6 @@ public class PlayerMovement : MonoBehaviour
 
         rb.linearVelocity = currentVelocity;
 
-
         if (jumpPressed && isGrounded)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
@@ -94,6 +91,7 @@ public class PlayerMovement : MonoBehaviour
         // Use current velocity, not input
         float actualSpeed = Mathf.Abs(rb.linearVelocity.x);
         animator.SetFloat("Speed", actualSpeed);
+        animator.SetBool("IsGrounded", isGrounded);
 
         // Flip sprite only if actually moving
         if (Mathf.Abs(moveDirection) > 0)

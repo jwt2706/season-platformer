@@ -1,0 +1,468 @@
+fileFormatVersion: 2
+guid: 0e11e36ddbde70063b7b0916535265c5
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -2775882763210085558
+    second: cat_jumping_0
+  - first:
+      213: 2956072079704691676
+    second: cat_jumping_1
+  - first:
+      213: -8495951651899165530
+    second: cat_jumping_2
+  - first:
+      213: 7562970738004959332
+    second: cat_jumping_3
+  - first:
+      213: 6230131939712287373
+    second: cat_jumping_4
+  - first:
+      213: -7273474710176815884
+    second: cat_jumping_5
+  - first:
+      213: -5568624583411092976
+    second: cat_jumping_6
+  - first:
+      213: 6983951915080648676
+    second: cat_jumping_7
+  - first:
+      213: 7691419544238821511
+    second: cat_jumping_8
+  - first:
+      213: -2936669530203772318
+    second: cat_jumping_9
+  - first:
+      213: 2555795829857757337
+    second: cat_jumping_10
+  - first:
+      213: 5983420327804009775
+    second: cat_jumping_11
+  - first:
+      213: 6548041703958160351
+    second: cat_jumping_12
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 500
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: cat_jumping_0
+      rect:
+        serializedVersion: 2
+        x: 129
+        y: 179
+        width: 732
+        height: 632
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a4babb885551a79d0800000000000000
+      internalID: -2775882763210085558
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cat_jumping_1
+      rect:
+        serializedVersion: 2
+        x: 1129
+        y: 179
+        width: 732
+        height: 632
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cd39f3105e3160920800000000000000
+      internalID: 2956072079704691676
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cat_jumping_2
+      rect:
+        serializedVersion: 2
+        x: 2019
+        y: 179
+        width: 842
+        height: 572
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a438af6cf0581a80800000000000000
+      internalID: -8495951651899165530
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cat_jumping_3
+      rect:
+        serializedVersion: 2
+        x: 3109
+        y: 169
+        width: 742
+        height: 542
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 460a57dd0d115f860800000000000000
+      internalID: 7562970738004959332
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cat_jumping_4
+      rect:
+        serializedVersion: 2
+        x: 4099
+        y: 119
+        width: 682
+        height: 752
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d82cd529dffd57650800000000000000
+      internalID: 6230131939712287373
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cat_jumping_5
+      rect:
+        serializedVersion: 2
+        x: 5049
+        y: 239
+        width: 812
+        height: 602
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4f4af11a94d6f0b90800000000000000
+      internalID: -7273474710176815884
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cat_jumping_6
+      rect:
+        serializedVersion: 2
+        x: 6029
+        y: 309
+        width: 902
+        height: 472
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 012364af17548b2b0800000000000000
+      internalID: -5568624583411092976
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cat_jumping_7
+      rect:
+        serializedVersion: 2
+        x: 7089
+        y: 239
+        width: 842
+        height: 652
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4e78ac2a34bfbe060800000000000000
+      internalID: 6983951915080648676
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cat_jumping_8
+      rect:
+        serializedVersion: 2
+        x: 8169
+        y: 179
+        width: 742
+        height: 762
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7801ad813596dba60800000000000000
+      internalID: 7691419544238821511
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cat_jumping_9
+      rect:
+        serializedVersion: 2
+        x: 9019
+        y: 149
+        width: 882
+        height: 592
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 26aad751f9ade37d0800000000000000
+      internalID: -2936669530203772318
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cat_jumping_10
+      rect:
+        serializedVersion: 2
+        x: 10019
+        y: 179
+        width: 842
+        height: 572
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 998a81d14c2087320800000000000000
+      internalID: 2555795829857757337
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cat_jumping_11
+      rect:
+        serializedVersion: 2
+        x: 11129
+        y: 179
+        width: 732
+        height: 632
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f2dfb9c2611690350800000000000000
+      internalID: 5983420327804009775
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cat_jumping_12
+      rect:
+        serializedVersion: 2
+        x: 12129
+        y: 179
+        width: 732
+        height: 632
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fd3aeda9c315fda50800000000000000
+      internalID: 6548041703958160351
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      cat_jumping_0: -2775882763210085558
+      cat_jumping_1: 2956072079704691676
+      cat_jumping_10: 2555795829857757337
+      cat_jumping_11: 5983420327804009775
+      cat_jumping_12: 6548041703958160351
+      cat_jumping_2: -8495951651899165530
+      cat_jumping_3: 7562970738004959332
+      cat_jumping_4: 6230131939712287373
+      cat_jumping_5: -7273474710176815884
+      cat_jumping_6: -5568624583411092976
+      cat_jumping_7: 6983951915080648676
+      cat_jumping_8: 7691419544238821511
+      cat_jumping_9: -2936669530203772318
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
