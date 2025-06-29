@@ -30,6 +30,10 @@ public class GameManager : MonoBehaviour
     public int maxCharms = 3;
     public int charmsCollected = 0;
 
+    [Header("Charm Spawn Settings")]
+    public Vector2 charmOffset = new Vector2(0.25f, 0.25f); // Offset for charm spawn position
+    public Vector3 charmScale = new Vector3(0.5f, 0.5f, 0.5f); // Scale of the spawned charm
+
     [Header("Season Settings")]
     public Season currentSeason = Season.Spring;
 
@@ -41,8 +45,8 @@ public class GameManager : MonoBehaviour
 
     [Header("Score and Timer")]
     public int totalScore = 0;
-    public float startTime = 60f;          // total game time at start
-    public float charmTimeBonus = 10f;     // how much time each charm adds
+    public float startTime = 60f;
+    public float charmTimeBonus = 10f;
 
     private float timeRemaining;
     private bool gameOver = false;
@@ -54,7 +58,6 @@ public class GameManager : MonoBehaviour
     public AudioClip winterMusic;
 
     private AudioSource musicSource;
-
 
     void Awake()
     {
@@ -81,7 +84,6 @@ public class GameManager : MonoBehaviour
         SpawnCharms();
     }
 
-
     void Update()
     {
         if (gameOver) return;
@@ -93,7 +95,7 @@ public class GameManager : MonoBehaviour
             timeRemaining = 0;
             gameOver = true;
             Debug.Log("Time's up! Game over.");
-            // TODO: Trigger end screen, restart, etc.
+            // TODO: Trigger end screen or restart
         }
     }
 
@@ -101,7 +103,6 @@ public class GameManager : MonoBehaviour
     {
         charmsCollected++;
         totalScore++;
-
         timeRemaining += charmTimeBonus;
 
         Debug.Log($"Charms Collected: {charmsCollected}/{maxCharms} | Score: {totalScore} | Time Left: {Mathf.FloorToInt(timeRemaining)}s");
@@ -121,7 +122,6 @@ public class GameManager : MonoBehaviour
         UpdateSeasonalTilemap();
         PlaySeasonMusic();
     }
-
 
     private void UpdateSeasonalTilemap()
     {
@@ -175,8 +175,12 @@ public class GameManager : MonoBehaviour
             if (baseTilemap.HasTile(spawnTilePos))
                 continue;
 
-            Vector3 worldPos = baseTilemap.CellToWorld(spawnTilePos) + new Vector3(0.5f, 0.5f, 0);
-            Instantiate(seasonPrefab, worldPos, Quaternion.identity);
+            Vector3 baseWorldPos = baseTilemap.CellToWorld(spawnTilePos);
+            Vector3 worldPos = baseWorldPos + new Vector3(charmOffset.x, charmOffset.y, 0);
+
+            GameObject spawnedCharm = Instantiate(seasonPrefab, worldPos, Quaternion.identity);
+            spawnedCharm.transform.localScale = charmScale;
+
             spawned++;
         }
     }
@@ -202,7 +206,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // Optional: expose time remaining and score to UI
     public float GetTimeRemaining() => timeRemaining;
     public int GetScore() => totalScore;
 
@@ -212,18 +215,10 @@ public class GameManager : MonoBehaviour
 
         switch (currentSeason)
         {
-            case Season.Spring:
-                clipToPlay = springMusic;
-                break;
-            case Season.Summer:
-                clipToPlay = summerMusic;
-                break;
-            case Season.Autumn:
-                clipToPlay = autumnMusic;
-                break;
-            case Season.Winter:
-                clipToPlay = winterMusic;
-                break;
+            case Season.Spring: clipToPlay = springMusic; break;
+            case Season.Summer: clipToPlay = summerMusic; break;
+            case Season.Autumn: clipToPlay = autumnMusic; break;
+            case Season.Winter: clipToPlay = winterMusic; break;
         }
 
         if (clipToPlay != null && musicSource.clip != clipToPlay)
@@ -232,5 +227,4 @@ public class GameManager : MonoBehaviour
             musicSource.Play();
         }
     }
-
 }
