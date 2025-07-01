@@ -2,13 +2,7 @@
 using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 
-public enum Season
-{
-    Spring,
-    Summer,
-    Autumn,
-    Winter
-}
+public enum Season { Spring, Summer, Autumn, Winter }
 
 [System.Serializable]
 public class SeasonalCharm
@@ -21,137 +15,150 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
+    /* ─────────────────────────────  INSPECTOR  ───────────────────────────── */
+    [Header("World & Generation")]
+    [Tooltip("Tilemap where ground will be painted")]
+    public Tilemap worldTilemap;                // single tilemap instead of four
+    [Tooltip("Tile used for all ground blocks (can swap later per season)")]
+    public TileBase groundTile;                 // one tile for now
+
+    [Tooltip("Width (x) of generated world in tiles")]
+    public int mapWidth = 128;
+    [Tooltip("Max height (y) of terrain above 0 in tiles")]
+    public int maxTerrainHeight = 12;
+    [Tooltip("Vertical offset so terrain never dips below this level")]
+    public int baseGroundHeight = 4;
+    [Tooltip("Perlin‑noise scale; smaller = smoother hills")]
+    public float noiseScale = .1f;
+
+    // NEW ────────────────────────────────────────────────────────────────────
+    [Header("Map Offset (cells)")]
+    public Vector2Int mapOffset = Vector2Int.zero;   // e.g. (‑32,‑8)
+
     [Header("Charm Settings")]
     public int maxCharms = 3;
-    public int charmsCollected = 0;
-
-    [Tooltip("Assign charm prefabs for each season")]
+    public float charmHeightOffset = 1f;        // how high above ground to spawn
     public SeasonalCharm[] seasonalCharms = new SeasonalCharm[4];
 
-    [Header("Season Settings")]
-    public Season currentSeason = Season.Spring;
-
-    [Header("Seasonal Tilemaps")]
-    public Tilemap springTilemap;
-    public Tilemap summerTilemap;
-    public Tilemap autumnTilemap;
-    public Tilemap winterTilemap;
-
-    [Header("Score and Timer")]
-    public int totalScore = 0;
+    [Header("Score / Timer")]
     public float startTime = 60f;
     public float charmTimeBonus = 10f;
-    private float timeRemaining;
-    private bool gameOver = false;
 
-    [Header("Music Settings")]
-    public AudioClip springMusic;
-    public AudioClip summerMusic;
-    public AudioClip autumnMusic;
-    public AudioClip winterMusic;
-    [Range(0f, 1f)] public float musicVolume = 1f;
+    /* — runtime state — */
+    public Season currentSeason = Season.Spring;
+    int charmsCollected = 0;
+    int totalScore = 0;
+    float timeRemaining = 0f;
+    bool gameOver = false;
 
-    [Header("SFX Settings")]
-    public AudioClip charmCollectSFX;
-    [Range(0f, 1f)] public float charmCollectVolume = 1f;
-    public AudioClip gameOverSFX;
-    [Range(0f, 1f)] public float gameOverVolume = 1f;
+    /* ─────────────────────────────  AUDIO  ───────────────────────────── */
+    [Header("Music")]
+    public AudioClip springMusic, summerMusic, autumnMusic, winterMusic;
+    [Range(0, 1)] public float musicVolume = 1;
+    [Header("SFX")]
+    public AudioClip charmCollectSFX, gameOverSFX;
+    [Range(0, 1)] public float charmCollectVolume = 1, gameOverVolume = 1;
 
-    private AudioSource musicSource;
-    private AudioSource sfxSource;
+    AudioSource musicSource, sfxSource;
 
-    private void Awake()
+    /* ─────────────────────────────  LIFECYCLE  ───────────────────────────── */
+
+    void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+        if (Instance == null) { Instance = this; DontDestroyOnLoad(gameObject); }
+        else { Destroy(gameObject); }
     }
 
-    private void Start()
+    void Start()
     {
-        // Music source setup
+        // audio
         musicSource = gameObject.AddComponent<AudioSource>();
         musicSource.loop = true;
         musicSource.playOnAwake = false;
-        musicSource.volume = musicVolume;
-
-        // SFX source setup
         sfxSource = gameObject.AddComponent<AudioSource>();
-        sfxSource.playOnAwake = false;
 
         timeRemaining = startTime;
 
-        UpdateSeasonalTilemap();
-        SpawnCharms();
+        BuildSeasonMap();      // generate tiles procedurally, now with offset
+        SpawnCharms();         // charms spawned on offset map
         PlaySeasonMusic();
     }
 
-    private void Update()
+    void Update()
     {
         if (gameOver) return;
 
         timeRemaining -= Time.deltaTime;
+        if (timeRemaining <= 0f) { timeRemaining = 0; TriggerGameOver(); }
+    }
 
-        if (timeRemaining <= 0f)
+    /* ─────────────────────────────  MAP GENERATION  ───────────────────────────── */
+
+    /// <summary>Rebuilds the whole tilemap using Perlin noise and <c>mapOffset</c>.</summary>
+    void BuildSeasonMap()
+    {
+        if (!worldTilemap || !groundTile)
         {
-            timeRemaining = 0f;
-            TriggerGameOver();
+            Debug.LogError("Missing worldTilemap or groundTile reference.");
+            return;
+        }
+
+        worldTilemap.ClearAllTiles();
+
+        // Small season‑based offset so each season is noticeably different
+        float seasonOffset = (int)currentSeason * 1000f;
+
+        for (int x = 0; x < mapWidth; x++)
+        {
+            // Perlin returns 0‑1; scale to desired terrain height
+            float noise = Mathf.PerlinNoise((x + seasonOffset) * noiseScale, 0f);
+            int height = Mathf.RoundToInt(noise * maxTerrainHeight) + baseGroundHeight;
+
+            for (int y = 0; y <= height; y++)
+            {
+                // APPLY GRID‑SPACE OFFSET HERE
+                var cell = new Vector3Int(x + mapOffset.x, y + mapOffset.y, 0);
+                worldTilemap.SetTile(cell, groundTile);
+            }
         }
     }
-    
-    private void SpawnCharms()
+
+    /* ─────────────────────────────  CHARMS  ───────────────────────────── */
+
+    void SpawnCharms()
     {
         GameObject seasonPrefab = GetPrefabForSeason(currentSeason);
-        if (seasonPrefab == null)
-        {
-            Debug.LogError($"No prefab assigned for season: {currentSeason}");
-            return;
-        }
+        if (!seasonPrefab) { Debug.LogError($"No prefab for {currentSeason}"); return; }
 
-        Tilemap activeTilemap = GetActiveTilemap();
-        if (activeTilemap == null)
+        // gather all top‑ground cells to use as spawn anchors
+        List<Vector3Int> spawnCells = new();
+        for (int x = 0; x < mapWidth; x++)
         {
-            Debug.LogError("Active seasonal tilemap is null ‑ have you hooked up all references?");
-            return;
-        }
+            int worldX = x + mapOffset.x;               // honour X offset
 
-        // Collect every cell that contains a tile (our ground)
-        List<Vector3Int> groundTiles = new List<Vector3Int>();
-        BoundsInt bounds = activeTilemap.cellBounds;
-
-        for (int x = bounds.xMin; x < bounds.xMax; x++)
-        {
-            for (int y = bounds.yMin; y < bounds.yMax; y++)
+            for (int y = worldTilemap.cellBounds.yMax; y >= worldTilemap.cellBounds.yMin; y--)
             {
-                Vector3Int tilePos = new Vector3Int(x, y, 0);
-                if (activeTilemap.HasTile(tilePos))
+                var cell = new Vector3Int(worldX, y, 0);
+                if (worldTilemap.HasTile(cell))
                 {
-                    groundTiles.Add(tilePos);
+                    spawnCells.Add(cell + Vector3Int.up); // 1 tile above ground
+                    break;
                 }
             }
         }
 
-        Shuffle(groundTiles);
-
+        Shuffle(spawnCells);
         int spawned = 0;
-        foreach (var tilePos in groundTiles)
+
+        foreach (var cell in spawnCells)
         {
             if (spawned >= maxCharms) break;
+            if (worldTilemap.HasTile(cell)) continue;   // something already there?
 
-            // Spawn the charm on the tile directly above the ground tile so it sits nicely on top
-            Vector3Int spawnTilePos = tilePos + Vector3Int.up;
-
-            // Skip if the cell above already has a tile (e.g., a wall or another object)
-            if (activeTilemap.HasTile(spawnTilePos)) continue;
-
-            Vector3 worldPos = activeTilemap.CellToWorld(spawnTilePos) + new Vector3(0.25f, 0.25f, 0);
-            Instantiate(seasonPrefab, worldPos, Quaternion.identity).transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+            // world position centred in cell, with charmHeightOffset lift
+            Vector3 worldPos = worldTilemap.CellToWorld(cell) + new Vector3(0.25f, 0.25f, 0);
+            Instantiate(seasonPrefab, worldPos, Quaternion.identity)
+                .transform.localScale = Vector3.one * .5f;
             spawned++;
         }
     }
@@ -167,42 +174,24 @@ public class GameManager : MonoBehaviour
         {
             charmsCollected = 0;
             NextSeason();
-            SpawnCharms();
         }
     }
 
-    public void NextSeason()
+    /* ─────────────────────────────  SEASONS  ───────────────────────────── */
+
+    void NextSeason()
     {
         currentSeason = (Season)(((int)currentSeason + 1) % 4);
-        UpdateSeasonalTilemap();
+        BuildSeasonMap();   // rebuild tiles on same offset grid
+        SpawnCharms();      // new charms on new map
         PlaySeasonMusic();
     }
 
-    private void UpdateSeasonalTilemap()
-    {
-        springTilemap.gameObject.SetActive(false);
-        summerTilemap.gameObject.SetActive(false);
-        autumnTilemap.gameObject.SetActive(false);
-        winterTilemap.gameObject.SetActive(false);
+    /* ─────────────────────────────  AUDIO / UTILS  ───────────────────────────── */
 
-        GetActiveTilemap()?.gameObject.SetActive(true);
-    }
-
-    private Tilemap GetActiveTilemap()
+    void PlaySeasonMusic()
     {
-        return currentSeason switch
-        {
-            Season.Spring => springTilemap,
-            Season.Summer => summerTilemap,
-            Season.Autumn => autumnTilemap,
-            Season.Winter => winterTilemap,
-            _ => null
-        };
-    }
-
-    private void PlaySeasonMusic()
-    {
-        AudioClip clipToPlay = currentSeason switch
+        AudioClip clip = currentSeason switch
         {
             Season.Spring => springMusic,
             Season.Summer => summerMusic,
@@ -211,52 +200,34 @@ public class GameManager : MonoBehaviour
             _ => null
         };
 
-        if (clipToPlay != null && musicSource.clip != clipToPlay)
+        if (clip && musicSource.clip != clip)
         {
-            musicSource.clip = clipToPlay;
+            musicSource.clip = clip;
             musicSource.volume = musicVolume;
             musicSource.Play();
         }
     }
 
-    private void PlaySFX(AudioClip clip, float volumeScale = 1f)
-    {
-        if (clip != null)
-        {
-            sfxSource.PlayOneShot(clip, Mathf.Clamp01(volumeScale));
-        }
-    }
+    void PlaySFX(AudioClip clip, float vol = 1) { if (clip) sfxSource.PlayOneShot(clip, vol); }
 
-    private void TriggerGameOver()
+    void TriggerGameOver()
     {
-        if (gameOver) return; // safeguard
+        if (gameOver) return;
         gameOver = true;
-
         PlaySFX(gameOverSFX, gameOverVolume);
         musicSource.Stop();
     }
 
-    private GameObject GetPrefabForSeason(Season season)
-    {
-        foreach (var c in seasonalCharms)
-        {
-            if (c.season == season)
-            {
-                return c.charmPrefab;
-            }
-        }
-        return null;
-    }
+    GameObject GetPrefabForSeason(Season s) =>
+        System.Array.Find(seasonalCharms, c => c.season == s)?.charmPrefab;
 
-    private void Shuffle<T>(List<T> list)
+    static void Shuffle<T>(IList<T> list)
     {
         for (int i = 0; i < list.Count; i++)
-        {
-            int rand = Random.Range(i, list.Count);
-            (list[i], list[rand]) = (list[rand], list[i]);
-        }
+            (list[i], list[Random.Range(i, list.Count)]) = (list[Random.Range(i, list.Count)], list[i]);
     }
 
+    /* ─────────────────────────────  PUBLIC GETTERS  ───────────────────────────── */
     public float GetTimeRemaining() => timeRemaining;
     public int GetScore() => totalScore;
 }
