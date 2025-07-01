@@ -20,7 +20,28 @@ public class GameManager : MonoBehaviour
     [Tooltip("Tilemap where ground will be painted")]
     public Tilemap worldTilemap;                // single tilemap instead of four
     [Tooltip("Tile used for all ground blocks (can swap later per season)")]
-    public TileBase groundTile;                 // one tile for now
+    public TileBase groundTile;   // one tile for now 
+
+    [Header("Platform parameters")]
+    [Range(0.05f, 1f)]
+    public float platformDensity = 0.4f;
+    [Range(0f, 1f)]
+    public float chaosLevel = 0.3f;
+    [Range(1, 4)]
+    public int maxPlatformThickness = 2;
+    public int minPlatformLength = 2;
+    public int maxPlatformLength = 6;
+    public int minGapLength = 2;
+    public int maxGapLength = 6;
+
+    [Header("Vertical layering")]
+    public int firstLayerHeight = 4;          // y above ground
+    public int lastLayerHeight = 14;         // highest layer
+    public int layerStep = 3;          // vertical spacing between layers
+
+    [Header("Player reachability")]
+    public int maxJumpHorizontal = 8;
+    public int maxJumpVertical = 6;
 
     [Tooltip("Width (x) of generated world in tiles")]
     public int mapWidth = 128;
@@ -95,33 +116,116 @@ public class GameManager : MonoBehaviour
     /* ─────────────────────────────  MAP GENERATION  ───────────────────────────── */
 
     /// <summary>Rebuilds the whole tilemap using Perlin noise and <c>mapOffset</c>.</summary>
-    void BuildSeasonMap()
+    public void BuildSeasonMap()
     {
         if (!worldTilemap || !groundTile)
         {
-            Debug.LogError("Missing worldTilemap or groundTile reference.");
+            Debug.LogError("Missing worldTilemap or groundTile reference");
             return;
         }
 
         worldTilemap.ClearAllTiles();
 
-        // Small season‑based offset so each season is noticeably different
-        float seasonOffset = (int)currentSeason * 1000f;
-
+        /* ───────────────────────────
+         * 1)  Flat ground strip
+         * ───────────────────────────*/
         for (int x = 0; x < mapWidth; x++)
         {
-            // Perlin returns 0‑1; scale to desired terrain height
-            float noise = Mathf.PerlinNoise((x + seasonOffset) * noiseScale, 0f);
-            int height = Mathf.RoundToInt(noise * maxTerrainHeight) + baseGroundHeight;
+            var cell = new Vector3Int(x + mapOffset.x, baseGroundHeight + mapOffset.y, 0);
+            worldTilemap.SetTile(cell, groundTile);
+        }
 
-            for (int y = 0; y <= height; y++)
+        /* ───────────────────────────
+         * 2)  Multiple platform layers
+         * ───────────────────────────*/
+        for (int layerY = firstLayerHeight;
+             layerY <= lastLayerHeight;
+             layerY += layerStep)
+        {
+            int xCursor = 0;
+            while (xCursor < mapWidth)
             {
-                // APPLY GRID‑SPACE OFFSET HERE
-                var cell = new Vector3Int(x + mapOffset.x, y + mapOffset.y, 0);
-                worldTilemap.SetTile(cell, groundTile);
+                // Decide whether to spawn a platform chunk or leave a gap
+                bool spawnPlatform = Random.value < platformDensity;
+
+                if (spawnPlatform)
+                {
+                    int length = Random.Range(minPlatformLength, maxPlatformLength + 1);
+                    length = Mathf.Min(length, mapWidth - xCursor);           // don’t spill past edge
+
+                    // Horizontal reach check against previous layer:
+                    // Find a platform that is no farther than maxJumpHorizontal
+                    // from *some* platform on the layer below (or ground).
+                    // Simplest approach: require length ≤ maxJumpHorizontal.
+                    length = Mathf.Min(length, maxJumpHorizontal);
+
+                    PlaceInterestingPlatform(xCursor, layerY, length);
+                    xCursor += length;
+
+                }
+                else  // leave gap
+                {
+                    int gap = Random.Range(minGapLength, maxGapLength + 1);
+                    gap = Mathf.Min(gap, maxJumpHorizontal);                  // keep jump‑able
+                    xCursor += gap;
+                }
             }
         }
     }
+
+    void PlaceInterestingPlatform(int startX, int baseY, int length)
+    {
+        int currentY = baseY;
+
+        for (int i = 0; i < length; i++)
+        {
+            /* ── 1.  Random hole ───────────────────────────────────────────── */
+            if (Random.value < 0.05f * chaosLevel)  // more chaos ⇒ more holes
+            {
+                startX++;
+                continue;
+            }
+
+            /* ── 2.  Tiny ups/downs for “wiggle” ───────────────────────────── */
+            if (Random.value < 0.2f * chaosLevel)   // more chaos ⇒ more bumps
+            {
+                int shift = Random.value < 0.5f ? -1 : 1;
+                currentY = Mathf.Clamp(currentY + shift, baseY - 2, baseY + 2);
+            }
+
+            /* ── 3.  Thickness driven by chaosLevel ──────────────────────────
+             *     • At chaos=0, thickness is always 1.
+             *     • As chaos→1, odds of thick chunks rise smoothly.
+             *     • Expected thickness spans 1 … maxPlatformThickness.
+             */
+            int thickness = 1;          // default “skinny”
+
+            // 70 % * chaosLevel chance to be >1 tile thick
+            if (Random.value < 0.7f * chaosLevel)
+            {
+                // Pick a thickness biased toward larger values as chaos rises
+                float t = Random.value;                            // 0–1
+                t = Mathf.Pow(t, 1f - chaosLevel);                 // skew
+                thickness = 1 + Mathf.FloorToInt(
+                    t * (maxPlatformThickness - 1));               // 1 … max
+            }
+
+            /* ── 4.  Paint the vertical stack ─────────────────────────────── */
+            for (int h = 0; h < thickness; h++)
+            {
+                var cell = new Vector3Int(
+                    startX + mapOffset.x,
+                    currentY - h + mapOffset.y,
+                    0);
+
+                worldTilemap.SetTile(cell, groundTile);
+            }
+
+            startX++;
+        }
+    }
+
+
 
     /* ─────────────────────────────  CHARMS  ───────────────────────────── */
 

@@ -247,7 +247,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0, y: -0.185}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -257,7 +257,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1.4, y: 1.35}
+  m_Size: {x: 0.9, y: 0.9}
   m_EdgeRadius: 0
 --- !u!212 &33674724
 SpriteRenderer:
@@ -5902,11 +5902,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   worldTilemap: {fileID: 1076447643}
   groundTile: {fileID: 11400000, guid: 4fa1250f4c4d0874381258e0af763060, type: 2}
-  mapWidth: 128
+  platformDensity: 0.4
+  chaosLevel: 0.337
+  maxPlatformThickness: 3
+  minPlatformLength: 2
+  maxPlatformLength: 6
+  minGapLength: 2
+  maxGapLength: 6
+  firstLayerHeight: 3
+  lastLayerHeight: 13
+  layerStep: 3
+  maxJumpHorizontal: 5
+  maxJumpVertical: 4
+  mapWidth: 112
   maxTerrainHeight: 11
   baseGroundHeight: 0
   noiseScale: 0.01
-  mapOffset: {x: -60, y: -8}
+  mapOffset: {x: -56, y: -8}
   maxCharms: 10
   charmHeightOffset: 0
   seasonalCharms:
