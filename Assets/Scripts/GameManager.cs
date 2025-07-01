@@ -42,16 +42,24 @@ public class GameManager : MonoBehaviour
     public int totalScore = 0;
     public float startTime = 60f;
     public float charmTimeBonus = 10f;
+    private float timeRemaining;
+    private bool gameOver = false;
 
     [Header("Music Settings")]
     public AudioClip springMusic;
     public AudioClip summerMusic;
     public AudioClip autumnMusic;
     public AudioClip winterMusic;
+    [Range(0f, 1f)] public float musicVolume = 1f;
 
-    private float timeRemaining;
-    private bool gameOver = false;
+    [Header("SFX Settings")]
+    public AudioClip charmCollectSFX;
+    [Range(0f, 1f)] public float charmCollectVolume = 1f;
+    public AudioClip gameOverSFX;
+    [Range(0f, 1f)] public float gameOverVolume = 1f;
+
     private AudioSource musicSource;
+    private AudioSource sfxSource;
 
     void Awake()
     {
@@ -68,9 +76,15 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        // set up music
         musicSource = gameObject.AddComponent<AudioSource>();
         musicSource.loop = true;
         musicSource.playOnAwake = false;
+        musicSource.volume = musicVolume;
+
+        // dedicated SFX source
+        sfxSource = gameObject.AddComponent<AudioSource>();
+        sfxSource.playOnAwake = false;
 
         timeRemaining = startTime;
         UpdateSeasonalTilemap();
@@ -87,7 +101,7 @@ public class GameManager : MonoBehaviour
         if (timeRemaining <= 0)
         {
             timeRemaining = 0;
-            gameOver = true;
+            TriggerGameOver();
         }
     }
 
@@ -104,16 +118,11 @@ public class GameManager : MonoBehaviour
         BoundsInt bounds = baseTilemap.cellBounds;
 
         for (int x = bounds.xMin; x < bounds.xMax; x++)
-        {
             for (int y = bounds.yMin; y < bounds.yMax; y++)
             {
                 Vector3Int tilePos = new Vector3Int(x, y, 0);
-                if (baseTilemap.HasTile(tilePos))
-                {
-                    groundTiles.Add(tilePos);
-                }
+                if (baseTilemap.HasTile(tilePos)) groundTiles.Add(tilePos);
             }
-        }
 
         Shuffle(groundTiles);
 
@@ -121,15 +130,11 @@ public class GameManager : MonoBehaviour
         foreach (var tilePos in groundTiles)
         {
             if (spawned >= maxCharms) break;
-
             Vector3Int spawnTilePos = tilePos + Vector3Int.up;
-            if (baseTilemap.HasTile(spawnTilePos))
-                continue;
+            if (baseTilemap.HasTile(spawnTilePos)) continue;
 
-            Vector3 baseWorldPos = baseTilemap.CellToWorld(spawnTilePos);
-            Vector3 worldPos = baseWorldPos + new Vector3(0.25f, 0.25f, 0);
-            GameObject spawnedCharm = Instantiate(seasonPrefab, worldPos, Quaternion.identity);
-            spawnedCharm.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+            Vector3 worldPos = baseTilemap.CellToWorld(spawnTilePos) + new Vector3(0.25f, 0.25f, 0);
+            Instantiate(seasonPrefab, worldPos, Quaternion.identity).transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
             spawned++;
         }
     }
@@ -139,6 +144,7 @@ public class GameManager : MonoBehaviour
         charmsCollected++;
         totalScore++;
         timeRemaining += charmTimeBonus;
+        PlaySFX(charmCollectSFX, charmCollectVolume);
 
         if (charmsCollected >= maxCharms)
         {
@@ -171,34 +177,9 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    GameObject GetPrefabForSeason(Season season)
-    {
-        foreach (var seasonalCharm in seasonalCharms)
-        {
-            if (seasonalCharm.season == season)
-                return seasonalCharm.charmPrefab;
-        }
-        return null;
-    }
-
-    private void Shuffle<T>(List<T> list)
-    {
-        for (int i = 0; i < list.Count; i++)
-        {
-            int rand = Random.Range(i, list.Count);
-            T temp = list[i];
-            list[i] = list[rand];
-            list[rand] = temp;
-        }
-    }
-
-    public float GetTimeRemaining() => timeRemaining;
-    public int GetScore() => totalScore;
-
     private void PlaySeasonMusic()
     {
         AudioClip clipToPlay = null;
-
         switch (currentSeason)
         {
             case Season.Spring: clipToPlay = springMusic; break;
@@ -210,7 +191,42 @@ public class GameManager : MonoBehaviour
         if (clipToPlay != null && musicSource.clip != clipToPlay)
         {
             musicSource.clip = clipToPlay;
+            musicSource.volume = musicVolume;
             musicSource.Play();
         }
     }
+
+    private void PlaySFX(AudioClip clip, float volumeScale = 1f)
+    {
+        if (clip != null)
+            sfxSource.PlayOneShot(clip, Mathf.Clamp01(volumeScale));
+    }
+
+    private void TriggerGameOver()
+    {
+        if (gameOver) return; // safeguard
+        gameOver = true;
+
+        PlaySFX(gameOverSFX, gameOverVolume);
+        musicSource.Stop();
+    }
+
+    GameObject GetPrefabForSeason(Season season)
+    {
+        foreach (var c in seasonalCharms)
+            if (c.season == season) return c.charmPrefab;
+        return null;
+    }
+
+    private void Shuffle<T>(List<T> list)
+    {
+        for (int i = 0; i < list.Count; i++)
+        {
+            int rand = Random.Range(i, list.Count);
+            (list[i], list[rand]) = (list[rand], list[i]);
+        }
+    }
+
+    public float GetTimeRemaining() => timeRemaining;
+    public int GetScore() => totalScore;
 }

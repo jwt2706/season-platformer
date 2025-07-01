@@ -345,6 +345,8 @@ MonoBehaviour:
   jumpForce: 8
   wrapXMin: -28
   wrapXMax: 28
+  jumpSound: {fileID: 8300000, guid: 3c41daa991a813c48bf54c191447c237, type: 3}
+  sfxVolume: 0.1
   pauseTextUI: {fileID: 454294858}
   pauseScoreText: {fileID: 344335654}
   gameOverPanel: {fileID: 1271000205}
@@ -5875,6 +5877,11 @@ MonoBehaviour:
   summerMusic: {fileID: 8300000, guid: 3edfcf31b2ffee884a98467c2f356bff, type: 3}
   autumnMusic: {fileID: 8300000, guid: 8ff0629cce716d51caac7b8c6aeec24c, type: 3}
   winterMusic: {fileID: 8300000, guid: 20ab15b04eb09b4feb5937711ad771a5, type: 3}
+  musicVolume: 0.4
+  charmCollectSFX: {fileID: 8300000, guid: 420b4ba8e78221241ad22d24b1241853, type: 3}
+  charmCollectVolume: 0.3
+  gameOverSFX: {fileID: 8300000, guid: d8375bc0b90e6fe449dcab54180948b6, type: 3}
+  gameOverVolume: 0.5
 --- !u!4 &1283057254
 Transform:
   m_ObjectHideFlags: 0

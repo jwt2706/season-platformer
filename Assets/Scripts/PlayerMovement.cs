@@ -13,6 +13,11 @@ public class PlayerMovement : MonoBehaviour
     public float wrapXMin = -16f;
     public float wrapXMax = 16f;
 
+    [Header("Audio")]
+    public AudioClip jumpSound;
+    [Range(0f, 1f)] public float sfxVolume = 1f;
+    private AudioSource sfxSource;
+
     [Header("UI References")]
     public GameObject pauseTextUI;
     public TextMeshProUGUI pauseScoreText;
@@ -68,6 +73,9 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         rb.freezeRotation = true;
 
+        sfxSource = gameObject.AddComponent<AudioSource>();
+        sfxSource.playOnAwake = false;
+
         if (pauseTextUI != null)
             pauseTextUI.SetActive(false);
         if (gameOverPanel != null)
@@ -98,6 +106,7 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
             jumpPressed = false;
+            if (jumpSound != null) sfxSource.PlayOneShot(jumpSound, sfxVolume);
         }
 
         float actualSpeed = Mathf.Abs(rb.linearVelocity.x);
@@ -147,7 +156,7 @@ public class PlayerMovement : MonoBehaviour
             pauseTextUI.SetActive(isPaused);
 
         if (pauseScoreText != null)
-            pauseScoreText.text = $"Game Puased!\nCurrent Score: {GameManager.Instance.GetScore()}\n\nPress (p) or (start) to continue.\nPress (r) or (select) to reset.";
+            pauseScoreText.text = $"Game Paused!\nCurrent Score: {GameManager.Instance.GetScore()}\n\nPress (p) or (start) to continue.\nPress (r) or (select) to reset.";
 
         Debug.Log("Game " + (isPaused ? "Paused" : "Unpaused"));
     }
