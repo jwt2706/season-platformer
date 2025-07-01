@@ -23,16 +23,11 @@ public class GameManager : MonoBehaviour
 
     [Header("Charm Settings")]
     public Tilemap baseTilemap;
-
-    [Tooltip("Assign charm prefabs for each season")]
-    public SeasonalCharm[] seasonalCharms = new SeasonalCharm[4];
-
     public int maxCharms = 3;
     public int charmsCollected = 0;
 
-    [Header("Charm Spawn Settings")]
-    public Vector2 charmOffset = new Vector2(0.25f, 0.25f); // Offset for charm spawn position
-    public Vector3 charmScale = new Vector3(0.5f, 0.5f, 0.5f); // Scale of the spawned charm
+    [Tooltip("Assign charm prefabs for each season")]
+    public SeasonalCharm[] seasonalCharms = new SeasonalCharm[4];
 
     [Header("Season Settings")]
     public Season currentSeason = Season.Spring;
@@ -48,15 +43,14 @@ public class GameManager : MonoBehaviour
     public float startTime = 60f;
     public float charmTimeBonus = 10f;
 
-    private float timeRemaining;
-    private bool gameOver = false;
-
     [Header("Music Settings")]
     public AudioClip springMusic;
     public AudioClip summerMusic;
     public AudioClip autumnMusic;
     public AudioClip winterMusic;
 
+    private float timeRemaining;
+    private bool gameOver = false;
     private AudioSource musicSource;
 
     void Awake()
@@ -80,8 +74,8 @@ public class GameManager : MonoBehaviour
 
         timeRemaining = startTime;
         UpdateSeasonalTilemap();
-        PlaySeasonMusic();
         SpawnCharms();
+        PlaySeasonMusic();
     }
 
     void Update()
@@ -94,48 +88,6 @@ public class GameManager : MonoBehaviour
         {
             timeRemaining = 0;
             gameOver = true;
-            Debug.Log("Time's up! Game over.");
-            // TODO: Trigger end screen or restart
-        }
-    }
-
-    public void AddCharm()
-    {
-        charmsCollected++;
-        totalScore++;
-        timeRemaining += charmTimeBonus;
-
-        Debug.Log($"Charms Collected: {charmsCollected}/{maxCharms} | Score: {totalScore} | Time Left: {Mathf.FloorToInt(timeRemaining)}s");
-
-        if (charmsCollected >= maxCharms)
-        {
-            charmsCollected = 0;
-            NextSeason();
-            SpawnCharms();
-        }
-    }
-
-    public void NextSeason()
-    {
-        currentSeason = (Season)(((int)currentSeason + 1) % 4);
-        Debug.Log($"Season changed to: {currentSeason}");
-        UpdateSeasonalTilemap();
-        PlaySeasonMusic();
-    }
-
-    private void UpdateSeasonalTilemap()
-    {
-        springTilemap.gameObject.SetActive(false);
-        summerTilemap.gameObject.SetActive(false);
-        autumnTilemap.gameObject.SetActive(false);
-        winterTilemap.gameObject.SetActive(false);
-
-        switch (currentSeason)
-        {
-            case Season.Spring: springTilemap.gameObject.SetActive(true); break;
-            case Season.Summer: summerTilemap.gameObject.SetActive(true); break;
-            case Season.Autumn: autumnTilemap.gameObject.SetActive(true); break;
-            case Season.Winter: winterTilemap.gameObject.SetActive(true); break;
         }
     }
 
@@ -171,17 +123,51 @@ public class GameManager : MonoBehaviour
             if (spawned >= maxCharms) break;
 
             Vector3Int spawnTilePos = tilePos + Vector3Int.up;
-
             if (baseTilemap.HasTile(spawnTilePos))
                 continue;
 
             Vector3 baseWorldPos = baseTilemap.CellToWorld(spawnTilePos);
-            Vector3 worldPos = baseWorldPos + new Vector3(charmOffset.x, charmOffset.y, 0);
-
+            Vector3 worldPos = baseWorldPos + new Vector3(0.25f, 0.25f, 0);
             GameObject spawnedCharm = Instantiate(seasonPrefab, worldPos, Quaternion.identity);
-            spawnedCharm.transform.localScale = charmScale;
-
+            spawnedCharm.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
             spawned++;
+        }
+    }
+
+    public void AddCharm()
+    {
+        charmsCollected++;
+        totalScore++;
+        timeRemaining += charmTimeBonus;
+
+        if (charmsCollected >= maxCharms)
+        {
+            charmsCollected = 0;
+            NextSeason();
+            SpawnCharms();
+        }
+    }
+
+    public void NextSeason()
+    {
+        currentSeason = (Season)(((int)currentSeason + 1) % 4);
+        UpdateSeasonalTilemap();
+        PlaySeasonMusic();
+    }
+
+    private void UpdateSeasonalTilemap()
+    {
+        springTilemap.gameObject.SetActive(false);
+        summerTilemap.gameObject.SetActive(false);
+        autumnTilemap.gameObject.SetActive(false);
+        winterTilemap.gameObject.SetActive(false);
+
+        switch (currentSeason)
+        {
+            case Season.Spring: springTilemap.gameObject.SetActive(true); break;
+            case Season.Summer: summerTilemap.gameObject.SetActive(true); break;
+            case Season.Autumn: autumnTilemap.gameObject.SetActive(true); break;
+            case Season.Winter: winterTilemap.gameObject.SetActive(true); break;
         }
     }
 
