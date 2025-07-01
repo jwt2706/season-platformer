@@ -5901,16 +5901,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   worldTilemap: {fileID: 1076447643}
-  groundTile: {fileID: 11400000, guid: 4fa1250f4c4d0874381258e0af763060, type: 2}
+  springGroundTile: {fileID: 11400000, guid: 29250329aab52d543ae0572f4cf97cd4, type: 2}
+  summerGroundTile: {fileID: 11400000, guid: 46d47adb50883cb4ba19e41eeecd2ef2, type: 2}
+  autumnGroundTile: {fileID: 11400000, guid: 18a4aea3c94e12549bf6bb09933878a9, type: 2}
+  winterGroundTile: {fileID: 11400000, guid: d2661c0bb8be0704688c88eee8a8f6cd, type: 2}
+  dirtTile: {fileID: 11400000, guid: 9f25b2344d94aa447a1b5a3f92c1cc43, type: 2}
   platformDensity: 0.4
-  chaosLevel: 0.337
-  maxPlatformThickness: 3
+  chaosLevel: 0
+  maxPlatformThickness: 1
   minPlatformLength: 2
   maxPlatformLength: 6
   minGapLength: 2
   maxGapLength: 6
   firstLayerHeight: 3
-  lastLayerHeight: 13
+  lastLayerHeight: 12
   layerStep: 3
   maxJumpHorizontal: 5
   maxJumpVertical: 4

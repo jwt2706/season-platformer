@@ -18,9 +18,14 @@ public class GameManager : MonoBehaviour
     /* ─────────────────────────────  INSPECTOR  ───────────────────────────── */
     [Header("World & Generation")]
     [Tooltip("Tilemap where ground will be painted")]
-    public Tilemap worldTilemap;                // single tilemap instead of four
-    [Tooltip("Tile used for all ground blocks (can swap later per season)")]
-    public TileBase groundTile;   // one tile for now 
+    public Tilemap worldTilemap;
+
+    [Header("Seasonal ground tiles")]
+    public TileBase springGroundTile;
+    public TileBase summerGroundTile;
+    public TileBase autumnGroundTile;
+    public TileBase winterGroundTile;
+    public TileBase dirtTile;
 
     [Header("Platform parameters")]
     [Range(0.05f, 1f)]
@@ -118,9 +123,10 @@ public class GameManager : MonoBehaviour
     /// <summary>Rebuilds the whole tilemap using Perlin noise and <c>mapOffset</c>.</summary>
     public void BuildSeasonMap()
     {
-        if (!worldTilemap || !groundTile)
+        TileBase seasonGroundTile = GetGroundTileForSeason();
+        if (!worldTilemap || !seasonGroundTile)
         {
-            Debug.LogError("Missing worldTilemap or groundTile reference");
+            Debug.LogError("Missing worldTilemap or season tile reference");
             return;
         }
 
@@ -132,7 +138,7 @@ public class GameManager : MonoBehaviour
         for (int x = 0; x < mapWidth; x++)
         {
             var cell = new Vector3Int(x + mapOffset.x, baseGroundHeight + mapOffset.y, 0);
-            worldTilemap.SetTile(cell, groundTile);
+            worldTilemap.SetTile(cell, seasonGroundTile);
         }
 
         /* ───────────────────────────
@@ -159,7 +165,7 @@ public class GameManager : MonoBehaviour
                     // Simplest approach: require length ≤ maxJumpHorizontal.
                     length = Mathf.Min(length, maxJumpHorizontal);
 
-                    PlaceInterestingPlatform(xCursor, layerY, length);
+                    PlaceInterestingPlatform(xCursor, layerY, length, seasonGroundTile);
                     xCursor += length;
 
                 }
@@ -173,7 +179,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void PlaceInterestingPlatform(int startX, int baseY, int length)
+    void PlaceInterestingPlatform(int startX, int baseY, int length, TileBase surfaceTile)
     {
         int currentY = baseY;
 
@@ -193,38 +199,42 @@ public class GameManager : MonoBehaviour
                 currentY = Mathf.Clamp(currentY + shift, baseY - 2, baseY + 2);
             }
 
-            /* ── 3.  Thickness driven by chaosLevel ──────────────────────────
-             *     • At chaos=0, thickness is always 1.
-             *     • As chaos→1, odds of thick chunks rise smoothly.
-             *     • Expected thickness spans 1 … maxPlatformThickness.
-             */
-            int thickness = 1;          // default “skinny”
+            /* ── 3.  Thickness driven by chaosLevel ────────────────────────── */
+            int thickness = 1;
 
-            // 70 % * chaosLevel chance to be >1 tile thick
             if (Random.value < 0.7f * chaosLevel)
             {
-                // Pick a thickness biased toward larger values as chaos rises
-                float t = Random.value;                            // 0–1
-                t = Mathf.Pow(t, 1f - chaosLevel);                 // skew
-                thickness = 1 + Mathf.FloorToInt(
-                    t * (maxPlatformThickness - 1));               // 1 … max
+                float t = Mathf.Pow(Random.value, 1f - chaosLevel);
+                thickness = 1 + Mathf.FloorToInt(t * (maxPlatformThickness - 1));
             }
 
             /* ── 4.  Paint the vertical stack ─────────────────────────────── */
             for (int h = 0; h < thickness; h++)
             {
+                TileBase tileToUse = (h == 0) ? surfaceTile : dirtTile;
                 var cell = new Vector3Int(
                     startX + mapOffset.x,
                     currentY - h + mapOffset.y,
                     0);
 
-                worldTilemap.SetTile(cell, groundTile);
+                worldTilemap.SetTile(cell, tileToUse);
             }
 
             startX++;
         }
     }
 
+    TileBase GetGroundTileForSeason()
+    {
+        return currentSeason switch
+        {
+            Season.Spring => springGroundTile,
+            Season.Summer => summerGroundTile,
+            Season.Autumn => autumnGroundTile,
+            Season.Winter => winterGroundTile,
+            _ => null
+        };
+    }
 
 
     /* ─────────────────────────────  CHARMS  ───────────────────────────── */
