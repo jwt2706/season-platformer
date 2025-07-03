@@ -31,7 +31,7 @@ public class GameManager : MonoBehaviour
     [Range(0.05f, 1f)]
     public float platformDensity = 0.4f;
     [Range(0f, 1f)]
-    public float chaosLevel = 0.3f;
+    public float chaosLevel = 0.0f;
     [Range(1, 4)]
     public int maxPlatformThickness = 2;
     public int minPlatformLength = 2;
@@ -76,6 +76,8 @@ public class GameManager : MonoBehaviour
     int totalScore = 0;
     float timeRemaining = 0f;
     bool gameOver = false;
+    public int seasonCounter = 0;
+    public int yearCounter = 0;
 
     /* ─────────────────────────────  AUDIO  ───────────────────────────── */
     [Header("Music")]
@@ -152,7 +154,7 @@ public class GameManager : MonoBehaviour
             while (xCursor < mapWidth)
             {
                 // Decide whether to spawn a platform chunk or leave a gap
-                bool spawnPlatform = Random.value < platformDensity;
+                bool spawnPlatform = Random.value < (platformDensity + (0.05 * yearCounter));
 
                 if (spawnPlatform)
                 {
@@ -183,17 +185,19 @@ public class GameManager : MonoBehaviour
     {
         int currentY = baseY;
 
+        float currChaosLevel = chaosLevel + (0.1f * yearCounter);
+
         for (int i = 0; i < length; i++)
         {
             /* ── 1.  Random hole ───────────────────────────────────────────── */
-            if (Random.value < 0.05f * chaosLevel)  // more chaos ⇒ more holes
+            if (Random.value < 0.05f * currChaosLevel)  // more chaos ⇒ more holes
             {
                 startX++;
                 continue;
             }
 
             /* ── 2.  Tiny ups/downs for “wiggle” ───────────────────────────── */
-            if (Random.value < 0.2f * chaosLevel)   // more chaos ⇒ more bumps
+            if (Random.value < 0.2f * currChaosLevel)   // more chaos ⇒ more bumps
             {
                 int shift = Random.value < 0.5f ? -1 : 1;
                 currentY = Mathf.Clamp(currentY + shift, baseY - 2, baseY + 2);
@@ -202,9 +206,9 @@ public class GameManager : MonoBehaviour
             /* ── 3.  Thickness driven by chaosLevel ────────────────────────── */
             int thickness = 1;
 
-            if (Random.value < 0.7f * chaosLevel)
+            if (Random.value < 0.7f * currChaosLevel)
             {
-                float t = Mathf.Pow(Random.value, 1f - chaosLevel);
+                float t = Mathf.Pow(Random.value, 1f - currChaosLevel);
                 thickness = 1 + Mathf.FloorToInt(t * (maxPlatformThickness - 1));
             }
 
@@ -295,6 +299,11 @@ public class GameManager : MonoBehaviour
 
     void NextSeason()
     {
+        seasonCounter++;
+        if (seasonCounter == 4) {
+            seasonCounter = 0;
+            yearCounter++;
+        }
         currentSeason = (Season)(((int)currentSeason + 1) % 4);
         BuildSeasonMap();   // rebuild tiles on same offset grid
         SpawnCharms();      // new charms on new map
