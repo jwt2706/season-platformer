@@ -34,6 +34,7 @@ public class CloudSpawner : MonoBehaviour
 
     [Tooltip("Buffer past camera edges for spawning & culling.")]
     public float offscreenPadding = 2f;
+    public float morekillX = 2f;
 
     [Header("Hierarchy")]
     [Tooltip("Optional parent transform to keep the hierarchy tidy.")]
@@ -50,7 +51,7 @@ public class CloudSpawner : MonoBehaviour
     {
         Camera cam = Camera.main;
         spawnX = cam.ViewportToWorldPoint(new Vector3(1, 0, 0)).x + offscreenPadding;
-        killX = cam.ViewportToWorldPoint(new Vector3(0, 0, 0)).x - offscreenPadding;
+        killX = cam.ViewportToWorldPoint(new Vector3(0, 0, 0)).x - offscreenPadding - morekillX;
 
         StartCoroutine(SpawnRoutine());
     }
