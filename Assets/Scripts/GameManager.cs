@@ -57,6 +57,11 @@ public class GameManager : MonoBehaviour
     [Tooltip("Perlin‑noise scale; smaller = smoother hills")]
     public float noiseScale = .1f;
 
+    public SpriteRenderer wallpaperRendererSpring;
+    public SpriteRenderer wallpaperRendererSummer;
+    public SpriteRenderer wallpaperRendererFall;
+    public SpriteRenderer wallpaperRendererWinter;
+
     // NEW ────────────────────────────────────────────────────────────────────
     [Header("Map Offset (cells)")]
     public Vector2Int mapOffset = Vector2Int.zero;   // e.g. (‑32,‑8)
@@ -110,6 +115,7 @@ public class GameManager : MonoBehaviour
         BuildSeasonMap();      // generate tiles procedurally, now with offset
         SpawnCharms();         // charms spawned on offset map
         PlaySeasonMusic();
+        UpdateWallpaper();
     }
 
     void Update()
@@ -240,6 +246,14 @@ public class GameManager : MonoBehaviour
         };
     }
 
+    void UpdateWallpaper()
+    {
+        wallpaperRendererSpring.enabled = (currentSeason == Season.Spring);
+        wallpaperRendererSummer.enabled = (currentSeason == Season.Summer);
+        wallpaperRendererFall.enabled = (currentSeason == Season.Autumn);
+        wallpaperRendererWinter.enabled = (currentSeason == Season.Winter);
+    }
+
 
     /* ─────────────────────────────  CHARMS  ───────────────────────────── */
 
@@ -300,14 +314,16 @@ public class GameManager : MonoBehaviour
     void NextSeason()
     {
         seasonCounter++;
-        if (seasonCounter == 4) {
+        if (seasonCounter == 4)
+        {
             seasonCounter = 0;
             yearCounter++;
         }
         currentSeason = (Season)(((int)currentSeason + 1) % 4);
-        BuildSeasonMap();   // rebuild tiles on same offset grid
-        SpawnCharms();      // new charms on new map
+        BuildSeasonMap();
+        SpawnCharms();
         PlaySeasonMusic();
+        UpdateWallpaper();
     }
 
     /* ─────────────────────────────  AUDIO / UTILS  ───────────────────────────── */
