@@ -617,6 +617,62 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &343744304
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 343744305}
+  - component: {fileID: 343744306}
+  m_Layer: 0
+  m_Name: CloudManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &343744305
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 343744304}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -1, z: 0}
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 2088751740}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &343744306
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 343744304}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a9a151697af9f4488b187f5ff7196f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cloudPrefabs:
+  - {fileID: 891074298324946914, guid: 8fd363a6c5f2735428f3c5b05f23c303, type: 3}
+  - {fileID: 6875650289435849115, guid: 3b8ea9c17b1c16f4f8caeec23a326b4a, type: 3}
+  - {fileID: 8096652006832233990, guid: 59317905d580d06458f7ab20d8c12414, type: 3}
+  - {fileID: 7069164871950340640, guid: 23e38b57d92394840b9fa5b43b8f6960, type: 3}
+  cloudsPerBurst: {x: 1, y: 5}
+  spawnDelay: {x: 2, y: 12}
+  heightRange: {x: 1, y: 3}
+  horizontalSpawnRange: {x: 12, y: 12}
+  speedRange: {x: 0.5, y: 2}
+  offscreenPadding: 2
+  cloudParent: {fileID: 0}
 --- !u!1 &344335652
 GameObject:
   m_ObjectHideFlags: 0
@@ -2547,6 +2603,7 @@ Transform:
   - {fileID: 33674725}
   - {fileID: 1283057254}
   - {fileID: 13238136}
+  - {fileID: 343744305}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
