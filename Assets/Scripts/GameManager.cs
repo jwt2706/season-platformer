@@ -1,14 +1,8 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 
-public enum Season
-{
-    Spring,
-    Summer,
-    Autumn,
-    Winter
-}
+public enum Season { Spring, Summer, Autumn, Winter }
 
 [System.Serializable]
 public class SeasonalCharm
@@ -21,79 +15,283 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
-    [Header("Charm Settings")]
-    public Tilemap baseTilemap;
+    /* ─────────────────────────────  INSPECTOR  ───────────────────────────── */
+    [Header("World & Generation")]
+    [Tooltip("Tilemap where ground will be painted")]
+    public Tilemap worldTilemap;
 
-    [Tooltip("Assign charm prefabs for each season")]
+    [Header("Seasonal ground tiles")]
+    public TileBase springGroundTile;
+    public TileBase summerGroundTile;
+    public TileBase autumnGroundTile;
+    public TileBase winterGroundTile;
+    public TileBase dirtTile;
+
+    [Header("Platform parameters")]
+    [Range(0.05f, 1f)]
+    public float platformDensity = 0.4f;
+    [Range(0f, 1f)]
+    public float chaosLevel = 0.0f;
+    [Range(1, 4)]
+    public int maxPlatformThickness = 2;
+    public int minPlatformLength = 2;
+    public int maxPlatformLength = 6;
+    public int minGapLength = 2;
+    public int maxGapLength = 6;
+
+    [Header("Vertical layering")]
+    public int firstLayerHeight = 4;          // y above ground
+    public int lastLayerHeight = 14;         // highest layer
+    public int layerStep = 3;          // vertical spacing between layers
+
+    [Header("Player reachability")]
+    public int maxJumpHorizontal = 8;
+    public int maxJumpVertical = 6;
+
+    [Tooltip("Width (x) of generated world in tiles")]
+    public int mapWidth = 128;
+    [Tooltip("Max height (y) of terrain above 0 in tiles")]
+    public int maxTerrainHeight = 12;
+    [Tooltip("Vertical offset so terrain never dips below this level")]
+    public int baseGroundHeight = 4;
+    [Tooltip("Perlin‑noise scale; smaller = smoother hills")]
+    public float noiseScale = .1f;
+
+    public SpriteRenderer wallpaperRendererSpring;
+    public SpriteRenderer wallpaperRendererSummer;
+    public SpriteRenderer wallpaperRendererFall;
+    public SpriteRenderer wallpaperRendererWinter;
+
+    // NEW ────────────────────────────────────────────────────────────────────
+    [Header("Map Offset (cells)")]
+    public Vector2Int mapOffset = Vector2Int.zero;   // e.g. (‑32,‑8)
+
+    [Header("Charm Settings")]
+    public int maxCharms = 3;
+    public float charmHeightOffset = 1f;        // how high above ground to spawn
     public SeasonalCharm[] seasonalCharms = new SeasonalCharm[4];
 
-    public int maxCharms = 3;
-    public int charmsCollected = 0;
+    [Header("Score / Timer")]
+    public float startTime = 60f;
+    public float charmTimeBonus = 10f;
 
-    [Header("Season Settings")]
+    /* — runtime state — */
     public Season currentSeason = Season.Spring;
+    int charmsCollected = 0;
+    int totalScore = 0;
+    float timeRemaining = 0f;
+    bool gameOver = false;
+    public int seasonCounter = 0;
+    public int yearCounter = 0;
 
-    [Header("Seasonal Tilemaps")]
-    public Tilemap springTilemap;
-    public Tilemap summerTilemap;
-    public Tilemap autumnTilemap;
-    public Tilemap winterTilemap;
+    /* ─────────────────────────────  AUDIO  ───────────────────────────── */
+    [Header("Music")]
+    public AudioClip springMusic, summerMusic, autumnMusic, winterMusic;
+    [Range(0, 1)] public float musicVolume = 1;
+    [Header("SFX")]
+    public AudioClip charmCollectSFX, gameOverSFX;
+    [Range(0, 1)] public float charmCollectVolume = 1, gameOverVolume = 1;
 
-    [Header("Score and Timer")]
-    public int totalScore = 0;
-    public float startTime = 60f;          // total game time at start
-    public float charmTimeBonus = 10f;     // how much time each charm adds
+    AudioSource musicSource, sfxSource;
 
-    private float timeRemaining;
-    private bool gameOver = false;
-
-    [Header("Music Settings")]
-    public AudioClip springMusic;
-    public AudioClip summerMusic;
-    public AudioClip autumnMusic;
-    public AudioClip winterMusic;
-
-    private AudioSource musicSource;
-
+    /* ─────────────────────────────  LIFECYCLE  ───────────────────────────── */
 
     void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+        if (Instance == null) { Instance = this; DontDestroyOnLoad(gameObject); }
+        else { Destroy(gameObject); }
     }
 
     void Start()
     {
+        // audio
         musicSource = gameObject.AddComponent<AudioSource>();
         musicSource.loop = true;
         musicSource.playOnAwake = false;
+        sfxSource = gameObject.AddComponent<AudioSource>();
 
         timeRemaining = startTime;
-        UpdateSeasonalTilemap();
-        PlaySeasonMusic();
-        SpawnCharms();
-    }
 
+        BuildSeasonMap();      // generate tiles procedurally, now with offset
+        SpawnCharms();         // charms spawned on offset map
+        PlaySeasonMusic();
+        UpdateWallpaper();
+    }
 
     void Update()
     {
         if (gameOver) return;
 
         timeRemaining -= Time.deltaTime;
+        if (timeRemaining <= 0f) { timeRemaining = 0; TriggerGameOver(); }
+    }
 
-        if (timeRemaining <= 0)
+    /* ─────────────────────────────  MAP GENERATION  ───────────────────────────── */
+
+    /// <summary>Rebuilds the whole tilemap using Perlin noise and <c>mapOffset</c>.</summary>
+    public void BuildSeasonMap()
+    {
+        TileBase seasonGroundTile = GetGroundTileForSeason();
+        if (!worldTilemap || !seasonGroundTile)
         {
-            timeRemaining = 0;
-            gameOver = true;
-            Debug.Log("Time's up! Game over.");
-            // TODO: Trigger end screen, restart, etc.
+            Debug.LogError("Missing worldTilemap or season tile reference");
+            return;
+        }
+
+        worldTilemap.ClearAllTiles();
+
+        /* ───────────────────────────
+         * 1)  Flat ground strip
+         * ───────────────────────────*/
+        for (int x = 0; x < mapWidth; x++)
+        {
+            var cell = new Vector3Int(x + mapOffset.x, baseGroundHeight + mapOffset.y, 0);
+            worldTilemap.SetTile(cell, seasonGroundTile);
+        }
+
+        /* ───────────────────────────
+         * 2)  Multiple platform layers
+         * ───────────────────────────*/
+        for (int layerY = firstLayerHeight;
+             layerY <= lastLayerHeight;
+             layerY += layerStep)
+        {
+            int xCursor = 0;
+            while (xCursor < mapWidth)
+            {
+                // Decide whether to spawn a platform chunk or leave a gap
+                bool spawnPlatform = Random.value < (platformDensity + (0.05 * yearCounter));
+
+                if (spawnPlatform)
+                {
+                    int length = Random.Range(minPlatformLength, maxPlatformLength + 1);
+                    length = Mathf.Min(length, mapWidth - xCursor);           // don’t spill past edge
+
+                    // Horizontal reach check against previous layer:
+                    // Find a platform that is no farther than maxJumpHorizontal
+                    // from *some* platform on the layer below (or ground).
+                    // Simplest approach: require length ≤ maxJumpHorizontal.
+                    length = Mathf.Min(length, maxJumpHorizontal);
+
+                    PlaceInterestingPlatform(xCursor, layerY, length, seasonGroundTile);
+                    xCursor += length;
+
+                }
+                else  // leave gap
+                {
+                    int gap = Random.Range(minGapLength, maxGapLength + 1);
+                    gap = Mathf.Min(gap, maxJumpHorizontal);                  // keep jump‑able
+                    xCursor += gap;
+                }
+            }
+        }
+    }
+
+    void PlaceInterestingPlatform(int startX, int baseY, int length, TileBase surfaceTile)
+    {
+        int currentY = baseY;
+
+        float currChaosLevel = chaosLevel + (0.1f * yearCounter);
+
+        for (int i = 0; i < length; i++)
+        {
+            /* ── 1.  Random hole ───────────────────────────────────────────── */
+            if (Random.value < 0.05f * currChaosLevel)  // more chaos ⇒ more holes
+            {
+                startX++;
+                continue;
+            }
+
+            /* ── 2.  Tiny ups/downs for “wiggle” ───────────────────────────── */
+            if (Random.value < 0.2f * currChaosLevel)   // more chaos ⇒ more bumps
+            {
+                int shift = Random.value < 0.5f ? -1 : 1;
+                currentY = Mathf.Clamp(currentY + shift, baseY - 2, baseY + 2);
+            }
+
+            /* ── 3.  Thickness driven by chaosLevel ────────────────────────── */
+            int thickness = 1;
+
+            if (Random.value < 0.7f * currChaosLevel)
+            {
+                float t = Mathf.Pow(Random.value, 1f - currChaosLevel);
+                thickness = 1 + Mathf.FloorToInt(t * (maxPlatformThickness - 1));
+            }
+
+            /* ── 4.  Paint the vertical stack ─────────────────────────────── */
+            for (int h = 0; h < thickness; h++)
+            {
+                TileBase tileToUse = (h == 0) ? surfaceTile : dirtTile;
+                var cell = new Vector3Int(
+                    startX + mapOffset.x,
+                    currentY - h + mapOffset.y,
+                    0);
+
+                worldTilemap.SetTile(cell, tileToUse);
+            }
+
+            startX++;
+        }
+    }
+
+    TileBase GetGroundTileForSeason()
+    {
+        return currentSeason switch
+        {
+            Season.Spring => springGroundTile,
+            Season.Summer => summerGroundTile,
+            Season.Autumn => autumnGroundTile,
+            Season.Winter => winterGroundTile,
+            _ => null
+        };
+    }
+
+    void UpdateWallpaper()
+    {
+        wallpaperRendererSpring.enabled = (currentSeason == Season.Spring);
+        wallpaperRendererSummer.enabled = (currentSeason == Season.Summer);
+        wallpaperRendererFall.enabled = (currentSeason == Season.Autumn);
+        wallpaperRendererWinter.enabled = (currentSeason == Season.Winter);
+    }
+
+
+    /* ─────────────────────────────  CHARMS  ───────────────────────────── */
+
+    void SpawnCharms()
+    {
+        GameObject seasonPrefab = GetPrefabForSeason(currentSeason);
+        if (!seasonPrefab) { Debug.LogError($"No prefab for {currentSeason}"); return; }
+
+        // gather all top‑ground cells to use as spawn anchors
+        List<Vector3Int> spawnCells = new();
+        for (int x = 0; x < mapWidth; x++)
+        {
+            int worldX = x + mapOffset.x;               // honour X offset
+
+            for (int y = worldTilemap.cellBounds.yMax; y >= worldTilemap.cellBounds.yMin; y--)
+            {
+                var cell = new Vector3Int(worldX, y, 0);
+                if (worldTilemap.HasTile(cell))
+                {
+                    spawnCells.Add(cell + Vector3Int.up); // 1 tile above ground
+                    break;
+                }
+            }
+        }
+
+        Shuffle(spawnCells);
+        int spawned = 0;
+
+        foreach (var cell in spawnCells)
+        {
+            if (spawned >= maxCharms) break;
+            if (worldTilemap.HasTile(cell)) continue;   // something already there?
+
+            // world position centred in cell, with charmHeightOffset lift
+            Vector3 worldPos = worldTilemap.CellToWorld(cell) + new Vector3(0.25f, 0.25f, 0);
+            Instantiate(seasonPrefab, worldPos, Quaternion.identity)
+                .transform.localScale = Vector3.one * .5f;
+            spawned++;
         }
     }
 
@@ -101,136 +299,74 @@ public class GameManager : MonoBehaviour
     {
         charmsCollected++;
         totalScore++;
-
         timeRemaining += charmTimeBonus;
-
-        Debug.Log($"Charms Collected: {charmsCollected}/{maxCharms} | Score: {totalScore} | Time Left: {Mathf.FloorToInt(timeRemaining)}s");
+        PlaySFX(charmCollectSFX, charmCollectVolume);
 
         if (charmsCollected >= maxCharms)
         {
             charmsCollected = 0;
             NextSeason();
-            SpawnCharms();
         }
     }
 
-    public void NextSeason()
+    /* ─────────────────────────────  SEASONS  ───────────────────────────── */
+
+    void NextSeason()
     {
+        seasonCounter++;
+        if (seasonCounter == 4)
+        {
+            seasonCounter = 0;
+            yearCounter++;
+        }
         currentSeason = (Season)(((int)currentSeason + 1) % 4);
-        Debug.Log($"Season changed to: {currentSeason}");
-        UpdateSeasonalTilemap();
+        BuildSeasonMap();
+        SpawnCharms();
         PlaySeasonMusic();
+        UpdateWallpaper();
     }
 
+    /* ─────────────────────────────  AUDIO / UTILS  ───────────────────────────── */
 
-    private void UpdateSeasonalTilemap()
+    void PlaySeasonMusic()
     {
-        springTilemap.gameObject.SetActive(false);
-        summerTilemap.gameObject.SetActive(false);
-        autumnTilemap.gameObject.SetActive(false);
-        winterTilemap.gameObject.SetActive(false);
-
-        switch (currentSeason)
+        AudioClip clip = currentSeason switch
         {
-            case Season.Spring: springTilemap.gameObject.SetActive(true); break;
-            case Season.Summer: summerTilemap.gameObject.SetActive(true); break;
-            case Season.Autumn: autumnTilemap.gameObject.SetActive(true); break;
-            case Season.Winter: winterTilemap.gameObject.SetActive(true); break;
-        }
-    }
+            Season.Spring => springMusic,
+            Season.Summer => summerMusic,
+            Season.Autumn => autumnMusic,
+            Season.Winter => winterMusic,
+            _ => null
+        };
 
-    private void SpawnCharms()
-    {
-        GameObject seasonPrefab = GetPrefabForSeason(currentSeason);
-        if (seasonPrefab == null)
+        if (clip && musicSource.clip != clip)
         {
-            Debug.LogError($"No prefab assigned for season: {currentSeason}");
-            return;
-        }
-
-        List<Vector3Int> groundTiles = new List<Vector3Int>();
-        BoundsInt bounds = baseTilemap.cellBounds;
-
-        for (int x = bounds.xMin; x < bounds.xMax; x++)
-        {
-            for (int y = bounds.yMin; y < bounds.yMax; y++)
-            {
-                Vector3Int tilePos = new Vector3Int(x, y, 0);
-                if (baseTilemap.HasTile(tilePos))
-                {
-                    groundTiles.Add(tilePos);
-                }
-            }
-        }
-
-        Shuffle(groundTiles);
-
-        int spawned = 0;
-        foreach (var tilePos in groundTiles)
-        {
-            if (spawned >= maxCharms) break;
-
-            Vector3Int spawnTilePos = tilePos + Vector3Int.up;
-
-            if (baseTilemap.HasTile(spawnTilePos))
-                continue;
-
-            Vector3 worldPos = baseTilemap.CellToWorld(spawnTilePos) + new Vector3(0.5f, 0.5f, 0);
-            Instantiate(seasonPrefab, worldPos, Quaternion.identity);
-            spawned++;
-        }
-    }
-
-    GameObject GetPrefabForSeason(Season season)
-    {
-        foreach (var seasonalCharm in seasonalCharms)
-        {
-            if (seasonalCharm.season == season)
-                return seasonalCharm.charmPrefab;
-        }
-        return null;
-    }
-
-    private void Shuffle<T>(List<T> list)
-    {
-        for (int i = 0; i < list.Count; i++)
-        {
-            int rand = Random.Range(i, list.Count);
-            T temp = list[i];
-            list[i] = list[rand];
-            list[rand] = temp;
-        }
-    }
-
-    // Optional: expose time remaining and score to UI
-    public float GetTimeRemaining() => timeRemaining;
-    public int GetScore() => totalScore;
-
-    private void PlaySeasonMusic()
-    {
-        AudioClip clipToPlay = null;
-
-        switch (currentSeason)
-        {
-            case Season.Spring:
-                clipToPlay = springMusic;
-                break;
-            case Season.Summer:
-                clipToPlay = summerMusic;
-                break;
-            case Season.Autumn:
-                clipToPlay = autumnMusic;
-                break;
-            case Season.Winter:
-                clipToPlay = winterMusic;
-                break;
-        }
-
-        if (clipToPlay != null && musicSource.clip != clipToPlay)
-        {
-            musicSource.clip = clipToPlay;
+            musicSource.clip = clip;
+            musicSource.volume = musicVolume;
             musicSource.Play();
         }
     }
 
+    void PlaySFX(AudioClip clip, float vol = 1) { if (clip) sfxSource.PlayOneShot(clip, vol); }
+
+    void TriggerGameOver()
+    {
+        if (gameOver) return;
+        gameOver = true;
+        PlaySFX(gameOverSFX, gameOverVolume);
+        musicSource.Stop();
+    }
+
+    GameObject GetPrefabForSeason(Season s) =>
+        System.Array.Find(seasonalCharms, c => c.season == s)?.charmPrefab;
+
+    static void Shuffle<T>(IList<T> list)
+    {
+        for (int i = 0; i < list.Count; i++)
+            (list[i], list[Random.Range(i, list.Count)]) = (list[Random.Range(i, list.Count)], list[i]);
+    }
+
+    /* ─────────────────────────────  PUBLIC GETTERS  ───────────────────────────── */
+    public float GetTimeRemaining() => timeRemaining;
+    public int GetScore() => totalScore;
 }

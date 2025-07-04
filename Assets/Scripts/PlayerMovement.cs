@@ -1,8 +1,8 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-
+using TMPro;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -10,10 +10,19 @@ public class PlayerMovement : MonoBehaviour
     public float jumpForce = 10f;
 
     [Header("Wrap Settings")]
-    public float wrapXMin = -16f; // left edge of screen
-    public float wrapXMax = 16f;  // right edge of screen
+    public float wrapXMin = -16f;
+    public float wrapXMax = 16f;
 
+    [Header("Audio")]
+    public AudioClip jumpSound;
+    [Range(0f, 1f)] public float sfxVolume = 1f;
+    private AudioSource sfxSource;
+
+    [Header("UI References")]
     public GameObject pauseTextUI;
+    public TextMeshProUGUI pauseScoreText;
+    public GameObject gameOverPanel;
+    public TextMeshProUGUI finalScoreText;
 
     private Rigidbody2D rb;
     private bool isGrounded;
@@ -22,10 +31,10 @@ public class PlayerMovement : MonoBehaviour
 
     private PlayerControls controls;
     private bool isPaused = false;
+    private bool isGameOver = false;
 
     private Animator animator;
     private SpriteRenderer spriteRenderer;
-
 
     private void Awake()
     {
@@ -41,10 +50,9 @@ public class PlayerMovement : MonoBehaviour
 
         controls.Player.Pause.performed += ctx => TogglePause();
 
-        // only allow reset when game is paused
         controls.Player.Reset.performed += ctx =>
         {
-            if (isPaused)
+            if (isPaused || isGameOver)
                 ResetGame();
         };
     }
@@ -63,22 +71,31 @@ public class PlayerMovement : MonoBehaviour
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
+        rb.freezeRotation = true;
+
+        sfxSource = gameObject.AddComponent<AudioSource>();
+        sfxSource.playOnAwake = false;
+
         if (pauseTextUI != null)
             pauseTextUI.SetActive(false);
-        rb.freezeRotation = true;
+        if (gameOverPanel != null)
+            gameOverPanel.SetActive(false);
     }
 
     void Update()
     {
-        if (isPaused) return;
+        if (isPaused || isGameOver) return;
+
+        HandleMovement();
+        CheckGameOver();
+    }
+
+    void HandleMovement()
+    {
         float horizontalVelocity = moveDirection * moveSpeed;
         Vector2 currentVelocity = rb.linearVelocity;
 
-        // Check for wall using a Raycast (optional improvement later)
-        if (!IsTouchingWall())
-            currentVelocity.x = moveDirection * moveSpeed;
-        else
-            currentVelocity.x = 0; // stop pushing into the wall
+        currentVelocity.x = moveDirection * moveSpeed;
 
         rb.linearVelocity = currentVelocity;
 
@@ -86,27 +103,37 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
             jumpPressed = false;
+            if (jumpSound != null) sfxSource.PlayOneShot(jumpSound, sfxVolume);
         }
 
-        // Use current velocity, not input
         float actualSpeed = Mathf.Abs(rb.linearVelocity.x);
         animator.SetFloat("Speed", actualSpeed);
         animator.SetBool("IsGrounded", isGrounded);
 
-        // Flip sprite only if actually moving
         if (Mathf.Abs(moveDirection) > 0)
             spriteRenderer.flipX = moveDirection < 0;
 
-        // Wraparound logic
         Vector3 pos = transform.position;
-
-        if (pos.x < wrapXMin)
-            pos.x = wrapXMax;
-        else if (pos.x > wrapXMax)
-            pos.x = wrapXMin;
-
+        if (pos.x < wrapXMin) pos.x = wrapXMax;
+        else if (pos.x > wrapXMax) pos.x = wrapXMin;
         transform.position = pos;
+    }
 
+    void CheckGameOver()
+    {
+        if (GameManager.Instance != null && GameManager.Instance.GetTimeRemaining() <= 0)
+        {
+            isGameOver = true;
+            Time.timeScale = 0f;
+
+            if (gameOverPanel != null)
+                gameOverPanel.SetActive(true);
+
+            if (finalScoreText != null)
+                finalScoreText.text = $"Game Over!\nFinal Score: {GameManager.Instance.GetScore()}\n\nPress (r) or (select) to reset.";
+
+            Debug.Log("Game Over! Final Score: " + GameManager.Instance.GetScore());
+        }
     }
 
     bool IsTouchingWall()
@@ -115,14 +142,18 @@ public class PlayerMovement : MonoBehaviour
         return hit.collider != null;
     }
 
-
     void TogglePause()
     {
+        if (isGameOver) return;
+
         isPaused = !isPaused;
         Time.timeScale = isPaused ? 0f : 1f;
 
         if (pauseTextUI != null)
             pauseTextUI.SetActive(isPaused);
+
+        if (pauseScoreText != null)
+            pauseScoreText.text = $"Game Paused!\nCurrent Score: {GameManager.Instance.GetScore()}\n\nPress (p) or (start) to continue.\nPress (r) or (select) to reset.";
 
         Debug.Log("Game " + (isPaused ? "Paused" : "Unpaused"));
     }
