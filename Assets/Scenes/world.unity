@@ -672,7 +672,7 @@ MonoBehaviour:
   horizontalSpawnRange: {x: 12, y: 12}
   speedRange: {x: 0.5, y: 2}
   offscreenPadding: 2
-  morekillX: 8
+  morekillX: 12
   cloudParent: {fileID: 0}
 --- !u!1 &344335652
 GameObject:
@@ -1893,7 +1893,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 4966732595609684114, guid: ed6cbecb1985b7b4c98aadd0067a8c27, type: 3}
-  m_Color: {r: 0.6313726, g: 0.7137255, b: 0.9019608, a: 1}
+  m_Color: {r: 0.40503737, g: 0.52697206, b: 0.7735849, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -2405,7 +2405,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 4966732595609684114, guid: ed6cbecb1985b7b4c98aadd0067a8c27, type: 3}
-  m_Color: {r: 0.7607843, g: 0.95686275, b: 1, a: 1}
+  m_Color: {r: 0.50356, g: 0.80221945, b: 0.8679245, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

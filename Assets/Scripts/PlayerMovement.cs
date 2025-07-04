@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -95,10 +95,7 @@ public class PlayerMovement : MonoBehaviour
         float horizontalVelocity = moveDirection * moveSpeed;
         Vector2 currentVelocity = rb.linearVelocity;
 
-        if (!IsTouchingWall())
-            currentVelocity.x = moveDirection * moveSpeed;
-        else
-            currentVelocity.x = 0;
+        currentVelocity.x = moveDirection * moveSpeed;
 
         rb.linearVelocity = currentVelocity;
 
